@@ -1,0 +1,4665 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1.0" />
+    <title>Mauli Tredars</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,400&family=DM+Sans:wght@300;400;500;600&family=JetBrains+Mono:wght@400;600&family=Cormorant+Garamond:ital,wght@1,300&display=swap"
+        rel="stylesheet" />
+    <style>
+        /* ═══════════════════════════════════════
+   RESET & TOKENS
+═══════════════════════════════════════ */
+        *,
+        *::before,
+        *::after {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            /* Website palette */
+            --green: #1a4a2e;
+            --green2: #2d6e45;
+            --lime: #7ec850;
+            --gold: #c8952a;
+            --cream: #f5f0e8;
+            --white: #fdfcfa;
+            --dark: #0f2318;
+            --text: #2a3a28;
+            --muted: #6b7c69;
+            /* Admin palette */
+            --abg: #0a0f0c;
+            --abg2: #111a14;
+            --abg3: #182119;
+            --acard: #1a2a1e;
+            --aborder: rgba(126, 200, 80, .12);
+            --aborder2: rgba(126, 200, 80, .22);
+            --ared: #e05555;
+            --ablue: #5599e0;
+            --aorange: #e09955;
+            --atext: rgba(240, 234, 216, .85);
+            --amuted: rgba(240, 234, 216, .4);
+            --mono: 'JetBrains Mono', monospace;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'DM Sans', sans-serif;
+            background: var(--white);
+            color: var(--text);
+            overflow-x: hidden;
+            cursor: none;
+        }
+
+        /* ═══════════════════════════════════════
+   CUSTOM CURSOR
+═══════════════════════════════════════ */
+        #cursor {
+            position: fixed;
+            width: 10px;
+            height: 10px;
+            background: var(--lime);
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 99999;
+            transform: translate(-50%, -50%);
+            transition: width .2s, height .2s, background .2s;
+            mix-blend-mode: multiply;
+        }
+
+        #cursor-ring {
+            position: fixed;
+            width: 34px;
+            height: 34px;
+            border: 2px solid rgba(126, 200, 80, .45);
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 99998;
+            transform: translate(-50%, -50%);
+            transition: width .3s, height .3s, border-color .3s;
+            will-change: left, top;
+        }
+
+        body.hov #cursor {
+            width: 18px;
+            height: 18px;
+            background: var(--gold);
+        }
+
+        body.hov #cursor-ring {
+            width: 50px;
+            height: 50px;
+            border-color: rgba(200, 149, 42, .35);
+        }
+
+        body.clk #cursor {
+            transform: translate(-50%, -50%) scale(.65);
+        }
+
+        body.admin-mode #cursor {
+            mix-blend-mode: normal;
+            background: var(--lime);
+        }
+
+        /* ═══════════════════════════════════════
+   PAGE LOADER
+═══════════════════════════════════════ */
+        #loader {
+            position: fixed;
+            inset: 0;
+            background: var(--dark);
+            z-index: 50000;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 1.5rem;
+            transition: opacity .6s, visibility .6s;
+        }
+
+        #loader.gone {
+            opacity: 0;
+            visibility: hidden;
+        }
+
+        .ld-logo {
+            font-family: 'Playfair Display', serif;
+            font-size: 2.2rem;
+            font-weight: 900;
+            color: var(--cream);
+        }
+
+        .ld-logo span {
+            color: var(--lime);
+        }
+
+        .ld-bar-wrap {
+            width: 180px;
+            height: 3px;
+            background: rgba(255, 255, 255, .1);
+            border-radius: 2px;
+            overflow: hidden;
+        }
+
+        .ld-bar {
+            height: 100%;
+            background: var(--lime);
+            animation: ldbar 1.8s ease forwards;
+        }
+
+        .ld-txt {
+            font-size: .7rem;
+            letter-spacing: .18em;
+            text-transform: uppercase;
+            color: rgba(245, 240, 232, .35);
+        }
+
+        @keyframes ldbar {
+            0% {
+                width: 0
+            }
+
+            60% {
+                width: 72%
+            }
+
+            100% {
+                width: 100%
+            }
+        }
+
+        /* ═══════════════════════════════════════
+   SCROLL PROGRESS
+═══════════════════════════════════════ */
+        #sprog {
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 2.5px;
+            background: linear-gradient(90deg, var(--lime), var(--gold));
+            z-index: 6000;
+            width: 0;
+            transition: width .08s;
+            pointer-events: none;
+        }
+
+        /* ═══════════════════════════════════════
+   TRANSITION WIPE
+═══════════════════════════════════════ */
+        #wipe {
+            position: fixed;
+            inset: 0;
+            background: var(--dark);
+            z-index: 40000;
+            transform: translateY(-100%);
+            transition: transform .45s cubic-bezier(.77, 0, .18, 1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        #wipe.in {
+            transform: translateY(0);
+        }
+
+        #wipe.out {
+            transform: translateY(100%);
+        }
+
+        .wipe-txt {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: var(--lime);
+            opacity: 0;
+            transition: opacity .25s .2s;
+        }
+
+        #wipe.in .wipe-txt {
+            opacity: 1;
+        }
+
+        /* ═══════════════════════════════════════
+   TOAST
+═══════════════════════════════════════ */
+        #toast {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            z-index: 60000;
+            background: var(--acard);
+            border: 1px solid var(--aborder2);
+            color: var(--atext);
+            padding: .9rem 1.4rem;
+            border-radius: 12px;
+            font-size: .83rem;
+            font-weight: 500;
+            box-shadow: 0 16px 40px rgba(0, 0, 0, .4);
+            transform: translateY(20px);
+            opacity: 0;
+            pointer-events: none;
+            transition: transform .35s, opacity .35s;
+            min-width: 220px;
+            max-width: 320px;
+            border-left: 4px solid var(--lime);
+        }
+
+        #toast.show {
+            transform: translateY(0);
+            opacity: 1;
+        }
+
+        #toast.err {
+            border-left-color: var(--ared);
+        }
+
+        #toast.warn {
+            border-left-color: var(--aorange);
+        }
+
+        /* ═══════════════════════════════════════
+   BACK TO TOP
+═══════════════════════════════════════ */
+        #btt {
+            position: fixed;
+            bottom: 2rem;
+            left: 2rem;
+            z-index: 5000;
+            width: 42px;
+            height: 42px;
+            border-radius: 50%;
+            background: var(--lime);
+            color: var(--dark);
+            border: none;
+            font-size: 1rem;
+            cursor: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transform: translateY(80px);
+            opacity: 0;
+            transition: transform .35s, opacity .35s, background .2s;
+            font-weight: 700;
+        }
+
+        #btt.show {
+            transform: translateY(0);
+            opacity: 1;
+        }
+
+        #btt:hover {
+            background: var(--gold);
+        }
+
+        /* ═══════════════════════════════════════
+   WEBSITE NAVBAR
+═══════════════════════════════════════ */
+        #site-nav {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            z-index: 5000;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 1.3rem 5%;
+            background: rgba(15, 35, 24, 0);
+            transition: background .4s, padding .3s;
+        }
+
+        #site-nav.scrolled {
+            background: rgba(15, 35, 24, .95);
+            backdrop-filter: blur(12px);
+            padding: .85rem 5%;
+            border-bottom: 1px solid rgba(126, 200, 80, .12);
+        }
+
+        .snav-logo {
+            font-family: 'Playfair Display', serif;
+            color: var(--cream);
+            font-size: 1.45rem;
+            font-weight: 900;
+            cursor: none;
+            text-decoration: none;
+        }
+
+        .snav-logo span {
+            color: var(--lime);
+        }
+
+        .snav-links {
+            display: flex;
+            gap: 1.8rem;
+            list-style: none;
+            align-items: center;
+        }
+
+        .snav-links a {
+            color: rgba(245, 240, 232, .7);
+            text-decoration: none;
+            font-size: .8rem;
+            font-weight: 500;
+            letter-spacing: .06em;
+            text-transform: uppercase;
+            position: relative;
+            padding-bottom: 4px;
+            transition: color .25s;
+            cursor: none;
+        }
+
+        .snav-links a::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 0;
+            height: 1.5px;
+            background: var(--lime);
+            transition: width .3s;
+        }
+
+        .snav-links a:hover,
+        .snav-links a.active {
+            color: var(--cream);
+        }
+
+        .snav-links a:hover::after,
+        .snav-links a.active::after {
+            width: 100%;
+        }
+
+        .snav-cta {
+            background: var(--lime) !important;
+            color: var(--dark) !important;
+            padding: .45rem 1.3rem;
+            border-radius: 50px;
+            font-weight: 700 !important;
+            transition: background .2s !important;
+        }
+
+        .snav-cta::after {
+            display: none !important;
+        }
+
+        .snav-cta:hover {
+            background: var(--gold) !important;
+        }
+
+        .snav-admin-pill {
+            display: flex;
+            align-items: center;
+            gap: .4rem;
+            background: rgba(255, 255, 255, .06);
+            border: 1px solid rgba(126, 200, 80, .2);
+            color: var(--lime) !important;
+            padding: .38rem .9rem;
+            border-radius: 50px;
+            font-size: .72rem !important;
+            font-weight: 700 !important;
+            letter-spacing: .06em;
+            cursor: none;
+        }
+
+        .snav-admin-pill::after {
+            display: none !important;
+        }
+
+        .snav-admin-pill:hover {
+            background: rgba(126, 200, 80, .12) !important;
+        }
+
+        .snav-badge {
+            width: 7px;
+            height: 7px;
+            background: var(--gold);
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+
+            0%,
+            100% {
+                opacity: 1
+            }
+
+            50% {
+                opacity: .3
+            }
+        }
+
+        /* ═══════════════════════════════════════
+   APP SHELL — VIEWS
+═══════════════════════════════════════ */
+        .view {
+            display: none;
+        }
+
+        .view.active {
+            display: block;
+            animation: viewIn .45s ease both;
+        }
+
+        @keyframes viewIn {
+            from {
+                opacity: 0;
+                transform: translateY(14px)
+            }
+
+            to {
+                opacity: 1;
+                transform: none
+            }
+        }
+
+        /* ═══════════════════════════════════════
+   SHARED SECTION UTILS
+═══════════════════════════════════════ */
+        section {
+            padding: 6rem 5%;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .stag {
+            display: inline-flex;
+            align-items: center;
+            gap: .5rem;
+            font-size: .7rem;
+            font-weight: 700;
+            letter-spacing: .13em;
+            text-transform: uppercase;
+            color: var(--green2);
+            margin-bottom: 1rem;
+        }
+
+        .stag::before {
+            content: '';
+            width: 22px;
+            height: 2px;
+            background: var(--lime);
+        }
+
+        .stitle {
+            font-family: 'Playfair Display', serif;
+            font-size: clamp(1.9rem, 3.8vw, 3rem);
+            font-weight: 900;
+            line-height: 1.1;
+            color: var(--dark);
+            margin-bottom: 1.3rem;
+        }
+
+        .stitle span {
+            color: var(--green2);
+        }
+
+        .sdesc {
+            color: var(--muted);
+            font-size: 1rem;
+            line-height: 1.8;
+            max-width: 560px;
+        }
+
+        .reveal {
+            opacity: 0;
+            transform: translateY(32px);
+            transition: opacity .65s, transform .65s;
+        }
+
+        .reveal-l {
+            opacity: 0;
+            transform: translateX(-36px);
+            transition: opacity .65s, transform .65s;
+        }
+
+        .reveal-r {
+            opacity: 0;
+            transform: translateX(36px);
+            transition: opacity .65s, transform .65s;
+        }
+
+        .reveal.on,
+        .reveal-l.on,
+        .reveal-r.on {
+            opacity: 1;
+            transform: none;
+        }
+
+        .d1 {
+            transition-delay: .08s !important;
+        }
+
+        .d2 {
+            transition-delay: .16s !important;
+        }
+
+        .d3 {
+            transition-delay: .24s !important;
+        }
+
+        .d4 {
+            transition-delay: .32s !important;
+        }
+
+        .btn-p {
+            background: var(--lime);
+            color: var(--dark);
+            padding: .82rem 1.9rem;
+            border-radius: 50px;
+            font-weight: 700;
+            font-size: .88rem;
+            letter-spacing: .04em;
+            text-decoration: none;
+            border: none;
+            cursor: none;
+            transition: background .2s, transform .25s, box-shadow .25s;
+            position: relative;
+            overflow: hidden;
+            display: inline-block;
+        }
+
+        .btn-p::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: rgba(255, 255, 255, .2);
+            transform: translateX(-110%) skewX(-20deg);
+            transition: transform .4s;
+        }
+
+        .btn-p:hover::before {
+            transform: translateX(110%) skewX(-20deg);
+        }
+
+        .btn-p:hover {
+            background: #8fd960;
+            transform: translateY(-3px);
+            box-shadow: 0 12px 28px rgba(126, 200, 80, .32);
+        }
+
+        .btn-o {
+            border: 1px solid rgba(245, 240, 232, .3);
+            color: var(--cream);
+            padding: .82rem 1.9rem;
+            border-radius: 50px;
+            font-weight: 500;
+            font-size: .88rem;
+            text-decoration: none;
+            background: transparent;
+            cursor: none;
+            transition: border-color .2s, background .2s, transform .2s;
+            display: inline-block;
+        }
+
+        .btn-o:hover {
+            border-color: var(--lime);
+            background: rgba(126, 200, 80, .08);
+            transform: translateY(-2px);
+        }
+
+        /* ═══════════════════════════════════════
+   HERO
+═══════════════════════════════════════ */
+        #hero {
+            min-height: 100vh;
+            background: var(--dark);
+            position: relative;
+            display: flex;
+            align-items: center;
+            overflow: hidden;
+        }
+
+        .hero-bg {
+            position: absolute;
+            inset: 0;
+            background: radial-gradient(ellipse 70% 60% at 70% 50%, rgba(45, 110, 69, .32) 0%, transparent 65%), radial-gradient(ellipse 40% 40% at 10% 80%, rgba(200, 149, 42, .1) 0%, transparent 60%);
+        }
+
+        .hero-grain {
+            position: absolute;
+            inset: 0;
+            opacity: .04;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='4'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+        }
+
+        #particles-c {
+            position: absolute;
+            inset: 0;
+            overflow: hidden;
+        }
+
+        .hero-inner {
+            position: relative;
+            z-index: 2;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 80px 5% 0;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 4rem;
+            align-items: center;
+        }
+
+        .hero-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: .5rem;
+            background: rgba(126, 200, 80, .12);
+            border: 1px solid rgba(126, 200, 80, .28);
+            color: var(--lime);
+            font-size: .7rem;
+            font-weight: 700;
+            letter-spacing: .13em;
+            text-transform: uppercase;
+            padding: .32rem .95rem;
+            border-radius: 50px;
+            margin-bottom: 1.5rem;
+            animation: hfade .8s .2s both;
+        }
+
+        .hero-badge::before {
+            content: '●';
+            font-size: .42rem;
+            animation: pulse 2s infinite;
+        }
+
+        .hero-title {
+            font-family: 'Playfair Display', serif;
+            font-size: clamp(2.8rem, 5.5vw, 4.8rem);
+            font-weight: 900;
+            line-height: 1.06;
+            color: var(--cream);
+            animation: hfade .8s .3s both;
+        }
+
+        .hero-title em {
+            font-style: italic;
+            color: var(--lime);
+            display: block;
+        }
+
+        .hero-sub {
+            font-family: 'Cormorant Garamond', serif;
+            font-style: italic;
+            color: rgba(200, 149, 42, .9);
+            font-size: 1.25rem;
+            margin-top: .75rem;
+            animation: hfade .8s .4s both;
+        }
+
+        .hero-desc {
+            color: rgba(245, 240, 232, .62);
+            font-size: .97rem;
+            line-height: 1.8;
+            margin-top: 1.4rem;
+            max-width: 470px;
+            animation: hfade .8s .5s both;
+        }
+
+        .hero-btns {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+            margin-top: 2.4rem;
+            animation: hfade .8s .6s both;
+        }
+
+        .hero-stats {
+            display: flex;
+            gap: 2.4rem;
+            flex-wrap: wrap;
+            margin-top: 2.8rem;
+            padding-top: 1.8rem;
+            border-top: 1px solid rgba(245, 240, 232, .1);
+            animation: hfade .8s .7s both;
+        }
+
+        .hstat-num {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.9rem;
+            font-weight: 700;
+            color: var(--lime);
+            display: block;
+            line-height: 1;
+        }
+
+        .hstat-lbl {
+            font-size: .7rem;
+            color: rgba(245, 240, 232, .42);
+            text-transform: uppercase;
+            letter-spacing: .1em;
+            margin-top: .2rem;
+            display: block;
+        }
+
+        @keyframes hfade {
+            from {
+                opacity: 0;
+                transform: translateY(28px)
+            }
+
+            to {
+                opacity: 1;
+                transform: none
+            }
+        }
+
+        /* Orbit */
+        .orbit-wrap {
+            position: relative;
+            width: 320px;
+            height: 320px;
+            margin: 0 auto;
+            animation: hfade .8s .4s both;
+        }
+
+        .orbit-center {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 90px;
+            height: 90px;
+            background: linear-gradient(135deg, var(--green), var(--green2));
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Playfair Display', serif;
+            color: var(--cream);
+            font-size: .7rem;
+            font-weight: 700;
+            text-align: center;
+            line-height: 1.4;
+            box-shadow: 0 0 40px rgba(45, 110, 69, .5);
+            z-index: 2;
+        }
+
+        .orbit-ring {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            border-radius: 50%;
+            border: 1px solid rgba(126, 200, 80, .13);
+            transform: translate(-50%, -50%);
+        }
+
+        .or1 {
+            width: 170px;
+            height: 170px;
+            animation: ospin 8s linear infinite;
+        }
+
+        .or2 {
+            width: 260px;
+            height: 260px;
+            animation: ospin 14s linear infinite reverse;
+        }
+
+        .or3 {
+            width: 320px;
+            height: 320px;
+            animation: ospin 20s linear infinite;
+        }
+
+        @keyframes ospin {
+            from {
+                transform: translate(-50%, -50%) rotate(0)
+            }
+
+            to {
+                transform: translate(-50%, -50%) rotate(360deg)
+            }
+        }
+
+        .orbit-item {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 44px;
+            height: 44px;
+            background: rgba(255, 255, 255, .06);
+            border: 1px solid rgba(126, 200, 80, .18);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.3rem;
+            transition: background .3s;
+            cursor: none;
+        }
+
+        .orbit-item:hover {
+            background: rgba(126, 200, 80, .15);
+        }
+
+        /* ═══════════════════════════════════════
+   MARQUEE
+═══════════════════════════════════════ */
+        .marquee-wrap {
+            background: var(--lime);
+            padding: .7rem 0;
+            overflow: hidden;
+        }
+
+        .marquee-track {
+            display: flex;
+            gap: 2.8rem;
+            white-space: nowrap;
+            animation: mq 22s linear infinite;
+        }
+
+        .mq-item {
+            font-size: .73rem;
+            font-weight: 700;
+            letter-spacing: .12em;
+            text-transform: uppercase;
+            color: var(--dark);
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            gap: .9rem;
+        }
+
+        .mq-item::after {
+            content: '◆';
+            font-size: .42rem;
+        }
+
+        @keyframes mq {
+            from {
+                transform: translateX(0)
+            }
+
+            to {
+                transform: translateX(-50%)
+            }
+        }
+
+        /* ═══════════════════════════════════════
+   ABOUT PAGE
+═══════════════════════════════════════ */
+        .page-hero {
+            min-height: 55vh;
+            background: var(--dark);
+            display: flex;
+            align-items: center;
+            position: relative;
+            overflow: hidden;
+            padding: 8rem 5% 4rem;
+        }
+
+        .page-hero-bg {
+            position: absolute;
+            inset: 0;
+        }
+
+        .page-hero-content {
+            position: relative;
+            z-index: 2;
+            max-width: 1200px;
+            margin: 0 auto;
+            width: 100%;
+        }
+
+        .page-tag {
+            display: inline-flex;
+            align-items: center;
+            gap: .5rem;
+            background: rgba(126, 200, 80, .1);
+            border: 1px solid rgba(126, 200, 80, .22);
+            color: var(--lime);
+            font-size: .7rem;
+            font-weight: 700;
+            letter-spacing: .13em;
+            text-transform: uppercase;
+            padding: .28rem .9rem;
+            border-radius: 50px;
+            margin-bottom: .9rem;
+        }
+
+        .page-hero h1 {
+            font-family: 'Playfair Display', serif;
+            font-size: clamp(2.4rem, 5vw, 4.2rem);
+            font-weight: 900;
+            color: var(--cream);
+            line-height: 1.06;
+        }
+
+        .page-hero h1 span {
+            color: var(--lime);
+        }
+
+        .about-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 5rem;
+            align-items: start;
+        }
+
+        .about-img-card {
+            background: linear-gradient(160deg, var(--green), var(--dark));
+            border-radius: 22px;
+            padding: 2.5rem;
+            color: var(--cream);
+            position: relative;
+            overflow: hidden;
+            margin-bottom: 1.4rem;
+        }
+
+        .about-img-card::before {
+            content: '';
+            position: absolute;
+            top: -40px;
+            right: -40px;
+            width: 160px;
+            height: 160px;
+            background: rgba(126, 200, 80, .1);
+            border-radius: 50%;
+        }
+
+        .about-img-card h3 {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.7rem;
+            margin-bottom: .9rem;
+            position: relative;
+            z-index: 1;
+        }
+
+        .about-img-card p {
+            opacity: .78;
+            line-height: 1.7;
+            font-size: .93rem;
+            position: relative;
+            z-index: 1;
+        }
+
+        .year-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: .4rem;
+            background: var(--gold);
+            color: var(--white);
+            padding: .35rem .95rem;
+            border-radius: 50px;
+            font-size: .76rem;
+            font-weight: 700;
+            margin-top: 1.4rem;
+            position: relative;
+            z-index: 1;
+        }
+
+        .val-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: .9rem;
+            margin-top: 1.4rem;
+        }
+
+        .val-card {
+            background: var(--white);
+            border-radius: 14px;
+            padding: 1.4rem;
+            border: 1px solid transparent;
+            transition: border-color .3s, transform .3s;
+        }
+
+        .val-card:hover {
+            border-color: var(--lime);
+            transform: translateY(-4px);
+        }
+
+        .val-icon {
+            font-size: 1.8rem;
+            display: block;
+            margin-bottom: .7rem;
+        }
+
+        .val-card h4 {
+            font-size: .88rem;
+            font-weight: 700;
+            color: var(--dark);
+            margin-bottom: .3rem;
+        }
+
+        .val-card p {
+            font-size: .78rem;
+            color: var(--muted);
+            line-height: 1.6;
+        }
+
+        .about-text h2 {
+            font-family: 'Playfair Display', serif;
+            font-size: 2rem;
+            font-weight: 900;
+            color: var(--dark);
+            margin-bottom: 1.3rem;
+        }
+
+        .about-text p {
+            color: var(--muted);
+            line-height: 1.85;
+            margin-bottom: 1.1rem;
+            font-size: .97rem;
+        }
+
+        .highlight-block {
+            background: var(--green);
+            border-radius: 14px;
+            padding: 1.8rem;
+            color: var(--cream);
+            margin: 1.8rem 0;
+            border-left: 4px solid var(--lime);
+        }
+
+        .highlight-block p {
+            color: rgba(245, 240, 232, .82);
+            line-height: 1.8;
+            font-size: .93rem;
+        }
+
+        .stats-row {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: .9rem;
+            margin-top: 1.8rem;
+        }
+
+        .sbox {
+            background: var(--cream);
+            border-radius: 13px;
+            padding: 1.3rem;
+            text-align: center;
+            transition: transform .2s;
+        }
+
+        .sbox:hover {
+            transform: translateY(-4px);
+        }
+
+        .sbox .n {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.8rem;
+            font-weight: 900;
+            color: var(--green2);
+            display: block;
+        }
+
+        .sbox .l {
+            font-size: .72rem;
+            color: var(--muted);
+            text-transform: uppercase;
+            letter-spacing: .06em;
+            margin-top: .2rem;
+            display: block;
+        }
+
+        /* ═══════════════════════════════════════
+   SERVICES PAGE
+═══════════════════════════════════════ */
+        .svc-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1.4rem;
+            margin-top: 2.5rem;
+        }
+
+        .svc-card {
+            background: var(--cream);
+            border-radius: 22px;
+            padding: 2.4rem;
+            border: 1px solid transparent;
+            position: relative;
+            overflow: hidden;
+            transition: transform .35s, box-shadow .35s, border-color .35s;
+        }
+
+        .svc-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, var(--lime), var(--gold));
+            transform: scaleX(0);
+            transform-origin: left;
+            transition: transform .4s;
+        }
+
+        .svc-card:hover::before {
+            transform: scaleX(1);
+        }
+
+        .svc-card:hover {
+            transform: translateY(-7px);
+            box-shadow: 0 22px 55px rgba(26, 74, 46, .1);
+            border-color: rgba(126, 200, 80, .28);
+        }
+
+        .svc-card.dk {
+            background: var(--green);
+            color: var(--cream);
+        }
+
+        .svc-num {
+            font-family: 'Playfair Display', serif;
+            font-size: 3.8rem;
+            font-weight: 900;
+            color: rgba(0, 0, 0, .04);
+            position: absolute;
+            top: .4rem;
+            right: 1.3rem;
+            line-height: 1;
+        }
+
+        .svc-card.dk .svc-num {
+            color: rgba(255, 255, 255, .05);
+        }
+
+        .svc-icon {
+            width: 56px;
+            height: 56px;
+            background: rgba(126, 200, 80, .12);
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.7rem;
+            margin-bottom: 1.4rem;
+        }
+
+        .svc-card.dk .svc-icon {
+            background: rgba(126, 200, 80, .17);
+        }
+
+        .svc-card h3 {
+            font-size: 1.15rem;
+            font-weight: 700;
+            color: var(--dark);
+            margin-bottom: .75rem;
+        }
+
+        .svc-card.dk h3 {
+            color: var(--cream);
+        }
+
+        .svc-card p {
+            font-size: .87rem;
+            color: var(--muted);
+            line-height: 1.75;
+        }
+
+        .svc-card.dk p {
+            color: rgba(245, 240, 232, .68);
+        }
+
+        .svc-list {
+            list-style: none;
+            margin-top: 1.3rem;
+            display: flex;
+            flex-direction: column;
+            gap: .55rem;
+        }
+
+        .svc-list li {
+            font-size: .8rem;
+            color: var(--muted);
+            display: flex;
+            align-items: center;
+            gap: .65rem;
+        }
+
+        .svc-list li::before {
+            content: '✓';
+            color: var(--lime);
+            font-weight: 700;
+            flex-shrink: 0;
+        }
+
+        .svc-card.dk .svc-list li {
+            color: rgba(245, 240, 232, .62);
+        }
+
+        /* ═══════════════════════════════════════
+   PRODUCTS PAGE
+═══════════════════════════════════════ */
+        .prod-filter {
+            display: flex;
+            gap: .7rem;
+            flex-wrap: wrap;
+            margin: 1.8rem 0 2.5rem;
+        }
+
+        .flt-btn {
+            padding: .45rem 1.2rem;
+            border-radius: 50px;
+            border: 1px solid rgba(255, 255, 255, .14);
+            background: transparent;
+            color: rgba(245, 240, 232, .58);
+            font-size: .77rem;
+            font-weight: 600;
+            letter-spacing: .06em;
+            text-transform: uppercase;
+            cursor: none;
+            transition: all .2s;
+        }
+
+        .flt-btn.active,
+        .flt-btn:hover {
+            background: var(--lime);
+            border-color: var(--lime);
+            color: var(--dark);
+        }
+
+        .prod-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1.4rem;
+        }
+
+        .prod-card {
+            background: rgba(255, 255, 255, .04);
+            border: 1px solid rgba(255, 255, 255, .07);
+            border-radius: 18px;
+            padding: 1.9rem 1.4rem;
+            text-align: center;
+            cursor: none;
+            transition: transform .35s, background .35s, border-color .35s, box-shadow .35s;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .prod-card::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 0;
+            background: linear-gradient(to top, rgba(126, 200, 80, .09), transparent);
+            transition: height .4s;
+        }
+
+        .prod-card:hover::after {
+            height: 100%;
+        }
+
+        .prod-card:hover {
+            transform: translateY(-9px);
+            background: rgba(126, 200, 80, .07);
+            border-color: rgba(126, 200, 80, .23);
+            box-shadow: 0 20px 48px rgba(0, 0, 0, .28);
+        }
+
+        .prod-icon {
+            font-size: 3.2rem;
+            display: block;
+            margin-bottom: 1.1rem;
+            position: relative;
+            z-index: 1;
+            transition: transform .3s;
+        }
+
+        .prod-card:hover .prod-icon {
+            transform: scale(1.15) rotate(-4deg);
+        }
+
+        .prod-card h4 {
+            font-size: .92rem;
+            font-weight: 700;
+            color: var(--cream);
+            margin-bottom: .28rem;
+            position: relative;
+            z-index: 1;
+        }
+
+        .prod-card p {
+            font-size: .76rem;
+            color: rgba(245, 240, 232, .42);
+            position: relative;
+            z-index: 1;
+        }
+
+        .prod-tag {
+            display: inline-block;
+            margin-top: .7rem;
+            background: rgba(126, 200, 80, .1);
+            border: 1px solid rgba(126, 200, 80, .17);
+            color: var(--lime);
+            font-size: .63rem;
+            font-weight: 700;
+            letter-spacing: .1em;
+            text-transform: uppercase;
+            padding: .18rem .65rem;
+            border-radius: 50px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .prod-season {
+            font-size: .7rem;
+            color: rgba(245, 240, 232, .32);
+            margin-top: .35rem;
+            display: block;
+            position: relative;
+            z-index: 1;
+        }
+
+        /* ═══════════════════════════════════════
+   CONTACT PAGE
+═══════════════════════════════════════ */
+        .contact-grid {
+            display: grid;
+            grid-template-columns: 1fr 1.45fr;
+            gap: 3.5rem;
+        }
+
+        .ci-cards {
+            display: flex;
+            flex-direction: column;
+            gap: 1.1rem;
+        }
+
+        .ci-card {
+            background: rgba(255, 255, 255, .04);
+            border: 1px solid rgba(255, 255, 255, .07);
+            border-radius: 16px;
+            padding: 1.5rem;
+            display: flex;
+            align-items: flex-start;
+            gap: 1.1rem;
+            transition: transform .3s, border-color .3s;
+        }
+
+        .ci-card:hover {
+            transform: translateX(6px);
+            border-color: rgba(126, 200, 80, .22);
+        }
+
+        .ci-ico {
+            width: 44px;
+            height: 44px;
+            border-radius: 11px;
+            background: linear-gradient(135deg, var(--green), var(--green2));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.15rem;
+            flex-shrink: 0;
+        }
+
+        .ci-txt strong {
+            color: var(--cream);
+            font-weight: 600;
+            font-size: .88rem;
+            display: block;
+            margin-bottom: .25rem;
+        }
+
+        .ci-txt span {
+            color: rgba(245, 240, 232, .52);
+            font-size: .83rem;
+            line-height: 1.6;
+        }
+
+        /* Form */
+        .form-card {
+            background: rgba(255, 255, 255, .04);
+            border: 1px solid rgba(255, 255, 255, .08);
+            border-radius: 22px;
+            padding: 2.8rem;
+        }
+
+        .form-card h3 {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.7rem;
+            font-weight: 700;
+            color: var(--cream);
+            margin-bottom: .4rem;
+        }
+
+        .form-card .fsub {
+            color: rgba(245, 240, 232, .45);
+            font-size: .85rem;
+            margin-bottom: 1.8rem;
+        }
+
+        .frow {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: .9rem;
+        }
+
+        .fg {
+            display: flex;
+            flex-direction: column;
+            gap: .42rem;
+            margin-bottom: 1rem;
+        }
+
+        .fg label {
+            font-size: .7rem;
+            font-weight: 700;
+            letter-spacing: .09em;
+            text-transform: uppercase;
+            color: rgba(245, 240, 232, .46);
+        }
+
+        .fg input,
+        .fg textarea,
+        .fg select {
+            background: rgba(255, 255, 255, .06);
+            border: 1px solid rgba(255, 255, 255, .1);
+            border-radius: 11px;
+            padding: .82rem 1rem;
+            color: var(--cream);
+            font-family: 'DM Sans', sans-serif;
+            font-size: .88rem;
+            outline: none;
+            transition: border-color .25s, box-shadow .25s;
+            cursor: none;
+        }
+
+        .fg input:focus,
+        .fg textarea:focus,
+        .fg select:focus {
+            border-color: var(--lime);
+            box-shadow: 0 0 0 3px rgba(126, 200, 80, .08);
+        }
+
+        .fg select option {
+            background: var(--dark);
+        }
+
+        .fg textarea {
+            resize: vertical;
+            min-height: 120px;
+        }
+
+        .fg input.err,
+        .fg textarea.err,
+        .fg select.err {
+            border-color: var(--ared);
+        }
+
+        .ferr {
+            font-size: .72rem;
+            color: #e07070;
+            display: none;
+            margin-top: .18rem;
+        }
+
+        .ferr.show {
+            display: block;
+        }
+
+        .ccount {
+            font-size: .68rem;
+            color: rgba(245, 240, 232, .28);
+            text-align: right;
+        }
+
+        .btn-submit {
+            width: 100%;
+            padding: 1.05rem;
+            background: var(--lime);
+            color: var(--dark);
+            border: none;
+            border-radius: 11px;
+            font-weight: 700;
+            font-size: .92rem;
+            cursor: none;
+            transition: background .25s, transform .25s, box-shadow .25s;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn-submit:hover {
+            background: #8fd960;
+            transform: translateY(-2px);
+            box-shadow: 0 10px 28px rgba(126, 200, 80, .28);
+        }
+
+        .btn-submit:disabled {
+            opacity: .55;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .form-success {
+            display: none;
+            text-align: center;
+            padding: 2.5rem 1rem;
+        }
+
+        .form-success.show {
+            display: block;
+            animation: viewIn .45s both;
+        }
+
+        .fs-icon {
+            font-size: 3.5rem;
+            display: block;
+            margin-bottom: .9rem;
+        }
+
+        .form-success h3 {
+            font-family: 'Playfair Display', serif;
+            color: var(--lime);
+            font-size: 1.7rem;
+            margin-bottom: .7rem;
+        }
+
+        .form-success p {
+            color: rgba(245, 240, 232, .55);
+            line-height: 1.7;
+            font-size: .88rem;
+        }
+
+        .btn-reset {
+            display: inline-block;
+            margin-top: 1.3rem;
+            padding: .65rem 1.6rem;
+            background: rgba(126, 200, 80, .1);
+            border: 1px solid rgba(126, 200, 80, .28);
+            color: var(--lime);
+            border-radius: 50px;
+            font-size: .82rem;
+            font-weight: 600;
+            cursor: none;
+            transition: background .2s;
+        }
+
+        .btn-reset:hover {
+            background: rgba(126, 200, 80, .18);
+        }
+
+        /* ═══════════════════════════════════════
+   HOME PREVIEW SECTIONS
+═══════════════════════════════════════ */
+        .quick-services-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1.1rem;
+        }
+
+        .qs-card {
+            background: var(--white);
+            border-radius: 16px;
+            padding: 1.8rem 1.4rem;
+            text-align: center;
+            border: 1px solid rgba(0, 0, 0, .06);
+            cursor: none;
+            transition: border-color .3s, transform .3s, box-shadow .3s;
+        }
+
+        .qs-card:hover {
+            border-color: var(--lime);
+            transform: translateY(-5px);
+            box-shadow: 0 14px 32px rgba(26, 74, 46, .08);
+        }
+
+        .qs-icon {
+            font-size: 2rem;
+            display: block;
+            margin-bottom: .8rem;
+        }
+
+        .qs-card h4 {
+            font-size: .88rem;
+            font-weight: 700;
+            color: var(--dark);
+            margin-bottom: .3rem;
+        }
+
+        .qs-card p {
+            font-size: .77rem;
+            color: var(--muted);
+            line-height: 1.6;
+        }
+
+        .cta-strip {
+            background: var(--lime);
+            padding: 4.5rem 5%;
+            text-align: center;
+        }
+
+        .cta-strip h2 {
+            font-family: 'Playfair Display', serif;
+            font-size: 2.4rem;
+            font-weight: 900;
+            color: var(--dark);
+            margin-bottom: .7rem;
+        }
+
+        .cta-strip p {
+            color: rgba(15, 35, 24, .62);
+            margin-bottom: 2rem;
+            font-size: .97rem;
+        }
+
+        /* ═══════════════════════════════════════
+   TIMELINE
+═══════════════════════════════════════ */
+        .tl-wrap {
+            position: relative;
+            max-width: 680px;
+            margin: 2.5rem auto 0;
+        }
+
+        .tl-line {
+            position: absolute;
+            left: 50%;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background: linear-gradient(to bottom, var(--lime), transparent);
+            transform: translateX(-50%);
+        }
+
+        .tl-items {
+            display: flex;
+            flex-direction: column;
+            gap: 2.2rem;
+        }
+
+        .tl-row {
+            display: flex;
+            gap: 1.8rem;
+            align-items: center;
+        }
+
+        .tl-row.r {
+            flex-direction: row-reverse;
+        }
+
+        .tl-dot {
+            width: 13px;
+            height: 13px;
+            border-radius: 50%;
+            background: var(--lime);
+            flex-shrink: 0;
+            box-shadow: 0 0 0 5px rgba(126, 200, 80, .18);
+            z-index: 1;
+        }
+
+        .tl-dot.g {
+            background: var(--gold);
+            box-shadow: 0 0 0 5px rgba(200, 149, 42, .18);
+        }
+
+        .tl-box {
+            flex: 1;
+            background: var(--white);
+            border-radius: 15px;
+            padding: 1.4rem;
+            border: 1px solid rgba(0, 0, 0, .05);
+        }
+
+        .tl-box.dk {
+            background: linear-gradient(135deg, var(--green), var(--dark));
+            color: var(--cream);
+        }
+
+        .tl-yr {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.3rem;
+            font-weight: 900;
+            color: var(--green2);
+        }
+
+        .tl-box.dk .tl-yr {
+            color: var(--lime);
+        }
+
+        .tl-box h4 {
+            font-weight: 700;
+            color: var(--dark);
+            margin: .28rem 0;
+        }
+
+        .tl-box.dk h4 {
+            color: var(--cream);
+        }
+
+        .tl-box p {
+            font-size: .8rem;
+            color: var(--muted);
+            line-height: 1.6;
+        }
+
+        .tl-box.dk p {
+            color: rgba(245, 240, 232, .62);
+        }
+
+        /* ═══════════════════════════════════════
+   FOOTER
+═══════════════════════════════════════ */
+        footer {
+            background: var(--dark);
+            border-top: 1px solid rgba(255, 255, 255, .06);
+            padding: 3rem 5% 2rem;
+        }
+
+        .footer-grid {
+            display: grid;
+            grid-template-columns: 1.5fr 1fr 1fr 1fr;
+            gap: 2.8rem;
+            margin-bottom: 2.2rem;
+        }
+
+        .footer-brand .snav-logo {
+            display: inline-block;
+            margin-bottom: .9rem;
+        }
+
+        .footer-brand p {
+            color: rgba(245, 240, 232, .42);
+            font-size: .83rem;
+            line-height: 1.7;
+            max-width: 230px;
+        }
+
+        .footer-col h5 {
+            font-size: .7rem;
+            font-weight: 700;
+            letter-spacing: .12em;
+            text-transform: uppercase;
+            color: rgba(245, 240, 232, .36);
+            margin-bottom: 1.1rem;
+        }
+
+        .footer-col ul {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: .65rem;
+        }
+
+        .footer-col ul li a {
+            color: rgba(245, 240, 232, .52);
+            font-size: .83rem;
+            text-decoration: none;
+            cursor: none;
+            transition: color .2s, padding-left .2s;
+            display: inline-block;
+        }
+
+        .footer-col ul li a:hover {
+            color: var(--lime);
+            padding-left: 4px;
+        }
+
+        .footer-bottom {
+            border-top: 1px solid rgba(255, 255, 255, .07);
+            padding-top: 1.4rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: .9rem;
+        }
+
+        .footer-bottom p {
+            font-size: .78rem;
+            color: rgba(245, 240, 232, .28);
+        }
+
+        .footer-bottom span {
+            color: var(--lime);
+        }
+
+        .socials {
+            display: flex;
+            gap: .7rem;
+        }
+
+        .socials a {
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            background: rgba(255, 255, 255, .05);
+            border: 1px solid rgba(255, 255, 255, .07);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: .85rem;
+            color: rgba(245, 240, 232, .45);
+            text-decoration: none;
+            cursor: none;
+            transition: background .2s, color .2s, transform .2s;
+        }
+
+        .socials a:hover {
+            background: rgba(126, 200, 80, .14);
+            color: var(--lime);
+            transform: translateY(-2px);
+        }
+
+        /* Admin link in footer */
+        .admin-footer-link {
+            display: inline-flex;
+            align-items: center;
+            gap: .4rem;
+            font-size: .75rem;
+            color: rgba(245, 240, 232, .4) !important;
+            border: 1px solid rgba(126, 200, 80, .15);
+            border-radius: 50px;
+            padding: .25rem .8rem;
+            transition: color .2s !important, border-color .2s !important;
+        }
+
+        .admin-footer-link:hover {
+            color: var(--lime) !important;
+            border-color: rgba(126, 200, 80, .3) !important;
+        }
+
+        /* ═══════════════════════════════════════
+   ██████ ADMIN AREA ██████
+═══════════════════════════════════════ */
+        /* Everything under .admin-area uses --a* tokens for contrast */
+        .admin-area {
+            font-family: 'DM Sans', sans-serif;
+            background: var(--abg);
+            min-height: 100vh;
+        }
+
+        /* Login */
+        #login-view {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--abg);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .login-ambg {
+            position: absolute;
+            inset: 0;
+            background: radial-gradient(ellipse 60% 80% at 20% 50%, rgba(45, 110, 69, .16) 0%, transparent 55%), radial-gradient(ellipse 50% 50% at 80% 20%, rgba(200, 149, 42, .07) 0%, transparent 55%);
+        }
+
+        .login-grid {
+            position: absolute;
+            inset: 0;
+            opacity: .04;
+            background-image: linear-gradient(var(--lime) 1px, transparent 1px), linear-gradient(90deg, var(--lime) 1px, transparent 1px);
+            background-size: 50px 50px;
+        }
+
+        .login-card {
+            position: relative;
+            z-index: 2;
+            width: 100%;
+            max-width: 430px;
+            margin: 1rem;
+            background: var(--acard);
+            border: 1px solid var(--aborder2);
+            border-radius: 22px;
+            padding: 2.8rem 2.4rem;
+            box-shadow: 0 40px 80px rgba(0, 0, 0, .5);
+            animation: viewIn .65s cubic-bezier(.22, 1, .36, 1) both;
+        }
+
+        .login-lockico {
+            width: 58px;
+            height: 58px;
+            border-radius: 15px;
+            background: linear-gradient(135deg, var(--green), var(--green2));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            margin: 0 auto 1.4rem;
+            box-shadow: 0 8px 22px rgba(45, 110, 69, .38);
+        }
+
+        .login-logo-t {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.65rem;
+            font-weight: 900;
+            color: var(--cream);
+            text-align: center;
+        }
+
+        .login-logo-t span {
+            color: var(--lime);
+        }
+
+        .login-tagline {
+            font-size: .68rem;
+            letter-spacing: .14em;
+            text-transform: uppercase;
+            color: var(--amuted);
+            text-align: center;
+            margin-top: .25rem;
+            margin-bottom: 1.8rem;
+        }
+
+        .login-title {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.4rem;
+            font-weight: 900;
+            color: var(--cream);
+            text-align: center;
+            margin-bottom: .3rem;
+        }
+
+        .login-sub {
+            font-size: .8rem;
+            color: var(--amuted);
+            text-align: center;
+            margin-bottom: 1.8rem;
+        }
+
+        .aig {
+            margin-bottom: 1.15rem;
+            position: relative;
+        }
+
+        .aig label {
+            display: block;
+            font-size: .7rem;
+            font-weight: 700;
+            letter-spacing: .1em;
+            text-transform: uppercase;
+            color: var(--amuted);
+            margin-bottom: .45rem;
+        }
+
+        .aig input {
+            width: 100%;
+            background: rgba(255, 255, 255, .04);
+            border: 1px solid rgba(255, 255, 255, .09);
+            border-radius: 11px;
+            padding: .82rem 2.8rem .82rem 2.9rem;
+            color: var(--cream);
+            font-family: 'DM Sans', sans-serif;
+            font-size: .88rem;
+            outline: none;
+            transition: border-color .25s, box-shadow .25s;
+        }
+
+        .aig input:focus {
+            border-color: var(--lime);
+            box-shadow: 0 0 0 3px rgba(126, 200, 80, .1);
+        }
+
+        .aig input.shake {
+            animation: shake .4s both;
+        }
+
+        .aig .aig-icon {
+            position: absolute;
+            left: .95rem;
+            top: 38px;
+            font-size: .95rem;
+            color: var(--amuted);
+            pointer-events: none;
+        }
+
+        .aig .aig-toggle {
+            position: absolute;
+            right: .95rem;
+            top: 38px;
+            font-size: .88rem;
+            color: var(--amuted);
+            cursor: pointer;
+            transition: color .2s;
+        }
+
+        .aig .aig-toggle:hover {
+            color: var(--lime);
+        }
+
+        @keyframes shake {
+
+            0%,
+            100% {
+                transform: translateX(0)
+            }
+
+            20%,
+            60% {
+                transform: translateX(-7px)
+            }
+
+            40%,
+            80% {
+                transform: translateX(7px)
+            }
+        }
+
+        .login-err {
+            background: rgba(224, 85, 85, .09);
+            border: 1px solid rgba(224, 85, 85, .22);
+            border-radius: 9px;
+            padding: .7rem .95rem;
+            font-size: .8rem;
+            color: #e07070;
+            margin-bottom: 1.1rem;
+            display: none;
+            gap: .55rem;
+            align-items: center;
+        }
+
+        .login-err.show {
+            display: flex;
+        }
+
+        .att-warn {
+            font-size: .73rem;
+            color: var(--aorange);
+            text-align: center;
+            margin-top: .7rem;
+            min-height: 1.2em;
+        }
+
+        .btn-login {
+            width: 100%;
+            padding: .95rem;
+            border-radius: 11px;
+            background: var(--lime);
+            color: var(--abg);
+            border: none;
+            font-weight: 700;
+            font-size: .92rem;
+            font-family: 'DM Sans', sans-serif;
+            cursor: pointer;
+            transition: background .2s, transform .2s, box-shadow .2s;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn-login::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            background: rgba(255, 255, 255, .2);
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            transition: width .5s, height .5s;
+        }
+
+        .btn-login:hover::before {
+            width: 280px;
+            height: 280px;
+        }
+
+        .btn-login:hover:not(:disabled) {
+            background: #8fd960;
+            transform: translateY(-2px);
+            box-shadow: 0 10px 28px rgba(126, 200, 80, .28);
+        }
+
+        .btn-login:disabled {
+            opacity: .5;
+            cursor: not-allowed;
+        }
+
+        .login-hint {
+            margin-top: 1.4rem;
+            padding: .9rem;
+            background: rgba(126, 200, 80, .05);
+            border: 1px solid rgba(126, 200, 80, .1);
+            border-radius: 9px;
+            font-size: .75rem;
+            color: var(--amuted);
+            line-height: 1.6;
+            font-family: var(--mono);
+        }
+
+        .login-hint strong {
+            color: var(--lime);
+        }
+
+        .lockout-panel {
+            text-align: center;
+            padding: .5rem 0;
+            display: none;
+        }
+
+        .lockout-panel.show {
+            display: block;
+        }
+
+        .lockout-timer {
+            font-family: var(--mono);
+            font-size: 1.9rem;
+            color: var(--ared);
+            font-weight: 700;
+        }
+
+        #login-form-fields.locked {
+            display: none;
+        }
+
+        .btn-back-site {
+            display: inline-flex;
+            align-items: center;
+            gap: .5rem;
+            margin-top: 1.3rem;
+            width: 100%;
+            justify-content: center;
+            padding: .65rem;
+            border-radius: 9px;
+            border: 1px solid rgba(255, 255, 255, .08);
+            background: transparent;
+            color: var(--amuted);
+            font-size: .78rem;
+            font-family: 'DM Sans', sans-serif;
+            cursor: pointer;
+            transition: border-color .2s, color .2s;
+        }
+
+        .btn-back-site:hover {
+            border-color: rgba(126, 200, 80, .25);
+            color: var(--lime);
+        }
+
+        /* Dashboard shell */
+        #dash-view {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        .sidebar {
+            width: 255px;
+            flex-shrink: 0;
+            background: var(--abg2);
+            border-right: 1px solid var(--aborder);
+            display: flex;
+            flex-direction: column;
+            position: sticky;
+            top: 0;
+            height: 100vh;
+            overflow-y: auto;
+        }
+
+        .sb-logo {
+            padding: 1.7rem 1.4rem 1.1rem;
+            border-bottom: 1px solid var(--aborder);
+        }
+
+        .sb-logo-txt {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.25rem;
+            font-weight: 900;
+            color: var(--cream);
+        }
+
+        .sb-logo-txt span {
+            color: var(--lime);
+        }
+
+        .sb-tag {
+            font-size: .65rem;
+            letter-spacing: .1em;
+            text-transform: uppercase;
+            color: var(--amuted);
+            margin-top: .18rem;
+        }
+
+        .sb-user {
+            display: flex;
+            align-items: center;
+            gap: .75rem;
+            padding: .9rem 1.3rem;
+            margin: .7rem .7rem 0;
+            background: rgba(126, 200, 80, .05);
+            border: 1px solid var(--aborder);
+            border-radius: 11px;
+        }
+
+        .sb-av {
+            width: 34px;
+            height: 34px;
+            border-radius: 9px;
+            background: linear-gradient(135deg, var(--green), var(--green2));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: .85rem;
+            flex-shrink: 0;
+        }
+
+        .sb-uname {
+            font-size: .82rem;
+            font-weight: 600;
+            color: var(--cream);
+        }
+
+        .sb-role {
+            font-size: .64rem;
+            color: var(--lime);
+            text-transform: uppercase;
+            letter-spacing: .07em;
+        }
+
+        .sb-section {
+            padding: .75rem .95rem .28rem;
+            font-size: .62rem;
+            font-weight: 700;
+            letter-spacing: .14em;
+            text-transform: uppercase;
+            color: var(--amuted);
+        }
+
+        .sb-nav {
+            list-style: none;
+            padding: 0 .7rem;
+        }
+
+        .sb-nav li {
+            margin-bottom: .18rem;
+        }
+
+        .sb-nav a {
+            display: flex;
+            align-items: center;
+            gap: .7rem;
+            padding: .68rem .95rem;
+            border-radius: 9px;
+            color: var(--amuted);
+            text-decoration: none;
+            font-size: .845rem;
+            font-weight: 500;
+            transition: background .2s, color .2s;
+            cursor: pointer;
+            border: 1px solid transparent;
+        }
+
+        .sb-nav a:hover {
+            background: rgba(255, 255, 255, .04);
+            color: var(--atext);
+        }
+
+        .sb-nav a.on {
+            background: rgba(126, 200, 80, .1);
+            color: var(--lime);
+            border-color: rgba(126, 200, 80, .14);
+        }
+
+        .sb-nav a .si {
+            width: 18px;
+            text-align: center;
+            font-size: .95rem;
+        }
+
+        .sb-badge {
+            margin-left: auto;
+            background: var(--lime);
+            color: var(--abg);
+            font-size: .6rem;
+            font-weight: 700;
+            padding: .12rem .45rem;
+            border-radius: 50px;
+        }
+
+        .sb-badge.r {
+            background: var(--ared);
+            color: white;
+        }
+
+        .sb-footer {
+            margin-top: auto;
+            padding: .9rem .7rem 1.4rem;
+        }
+
+        .btn-logout {
+            width: 100%;
+            padding: .68rem .95rem;
+            border-radius: 9px;
+            background: rgba(224, 85, 85, .07);
+            border: 1px solid rgba(224, 85, 85, .14);
+            color: #e07070;
+            font-size: .82rem;
+            font-weight: 600;
+            font-family: 'DM Sans', sans-serif;
+            cursor: pointer;
+            transition: background .2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: .45rem;
+        }
+
+        .btn-logout:hover {
+            background: rgba(224, 85, 85, .14);
+        }
+
+        .btn-to-site {
+            width: 100%;
+            padding: .68rem .95rem;
+            border-radius: 9px;
+            background: rgba(126, 200, 80, .06);
+            border: 1px solid rgba(126, 200, 80, .13);
+            color: var(--lime);
+            font-size: .82rem;
+            font-weight: 600;
+            font-family: 'DM Sans', sans-serif;
+            cursor: pointer;
+            transition: background .2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: .45rem;
+            margin-bottom: .5rem;
+        }
+
+        .btn-to-site:hover {
+            background: rgba(126, 200, 80, .12);
+        }
+
+        /* Main */
+        .main-col {
+            flex: 1;
+            overflow-y: auto;
+            background: var(--abg);
+        }
+
+        .topbar {
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            background: rgba(10, 15, 12, .9);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--aborder);
+            padding: .88rem 2rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .topbar-ttl {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.15rem;
+            font-weight: 700;
+            color: var(--cream);
+        }
+
+        .topbar-r {
+            display: flex;
+            align-items: center;
+            gap: .95rem;
+        }
+
+        .tb-clock {
+            font-family: var(--mono);
+            font-size: .78rem;
+            color: var(--amuted);
+        }
+
+        .online-dot {
+            display: flex;
+            align-items: center;
+            gap: .38rem;
+            font-size: .72rem;
+            color: var(--lime);
+            font-weight: 600;
+        }
+
+        .online-dot::before {
+            content: '●';
+            font-size: .48rem;
+            animation: pulse 2s infinite;
+        }
+
+        /* Panel */
+        .panel {
+            display: none;
+            padding: 1.8rem 2rem;
+        }
+
+        .panel.on {
+            display: block;
+            animation: viewIn .32s ease both;
+        }
+
+        /* Metrics */
+        .met-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1.1rem;
+            margin-bottom: 1.8rem;
+        }
+
+        .met-card {
+            background: var(--acard);
+            border: 1px solid var(--aborder);
+            border-radius: 16px;
+            padding: 1.5rem;
+            position: relative;
+            overflow: hidden;
+            transition: transform .25s, box-shadow .25s;
+        }
+
+        .met-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 14px 36px rgba(0, 0, 0, .28);
+        }
+
+        .met-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: linear-gradient(90deg, var(--lime), transparent);
+        }
+
+        .met-card.g::before {
+            background: linear-gradient(90deg, var(--gold), transparent);
+        }
+
+        .met-card.b::before {
+            background: linear-gradient(90deg, var(--ablue), transparent);
+        }
+
+        .met-card.r::before {
+            background: linear-gradient(90deg, var(--ared), transparent);
+        }
+
+        .met-ico {
+            font-size: 1.5rem;
+            margin-bottom: .7rem;
+            display: block;
+        }
+
+        .met-n {
+            font-family: 'Playfair Display', serif;
+            font-size: 2rem;
+            font-weight: 900;
+            color: var(--cream);
+            display: block;
+            line-height: 1;
+        }
+
+        .met-l {
+            font-size: .72rem;
+            color: var(--amuted);
+            text-transform: uppercase;
+            letter-spacing: .08em;
+            margin-top: .28rem;
+            display: block;
+        }
+
+        .met-d {
+            font-size: .7rem;
+            font-weight: 600;
+            margin-top: .45rem;
+            display: inline-flex;
+            align-items: center;
+            gap: .18rem;
+            padding: .1rem .45rem;
+            border-radius: 50px;
+        }
+
+        .met-d.up {
+            background: rgba(126, 200, 80, .1);
+            color: var(--lime);
+        }
+
+        .met-d.nw {
+            background: rgba(200, 149, 42, .1);
+            color: var(--gold);
+        }
+
+        /* Charts */
+        .chart-row {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 1.1rem;
+            margin-bottom: 1.8rem;
+        }
+
+        .chart-card {
+            background: var(--acard);
+            border: 1px solid var(--aborder);
+            border-radius: 16px;
+            padding: 1.5rem;
+        }
+
+        .chart-hd {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.3rem;
+        }
+
+        .chart-ttl {
+            font-size: .92rem;
+            font-weight: 600;
+            color: var(--cream);
+        }
+
+        .chart-sub {
+            font-size: .72rem;
+            color: var(--amuted);
+            margin-top: .18rem;
+        }
+
+        .bar-chart {
+            display: flex;
+            align-items: flex-end;
+            gap: .55rem;
+            height: 110px;
+        }
+
+        .bw {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: .38rem;
+            flex: 1;
+        }
+
+        .bar {
+            width: 100%;
+            background: linear-gradient(to top, var(--lime), rgba(126, 200, 80, .38));
+            border-radius: 5px 5px 0 0;
+            min-height: 4px;
+            position: relative;
+            cursor: default;
+            transition: opacity .3s;
+        }
+
+        .bar:hover {
+            opacity: .8;
+        }
+
+        .bar:hover::after {
+            content: attr(data-v);
+            position: absolute;
+            top: -26px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--abg2);
+            border: 1px solid var(--aborder2);
+            border-radius: 5px;
+            font-size: .67rem;
+            color: var(--cream);
+            padding: .18rem .45rem;
+            white-space: nowrap;
+        }
+
+        .bl {
+            font-size: .62rem;
+            color: var(--amuted);
+            text-align: center;
+        }
+
+        .donut-wrap {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 1.1rem;
+        }
+
+        .dsvg {
+            width: 110px;
+            height: 110px;
+        }
+
+        .dlgs {
+            display: flex;
+            flex-direction: column;
+            gap: .45rem;
+            width: 100%;
+        }
+
+        .dlg {
+            display: flex;
+            align-items: center;
+            gap: .55rem;
+            font-size: .75rem;
+            color: var(--atext);
+        }
+
+        .dlg-dot {
+            width: 9px;
+            height: 9px;
+            border-radius: 50%;
+            flex-shrink: 0;
+        }
+
+        /* Table */
+        .tbl-card {
+            background: var(--acard);
+            border: 1px solid var(--aborder);
+            border-radius: 16px;
+            overflow: hidden;
+        }
+
+        .tbl-toolbar {
+            padding: .95rem 1.4rem;
+            border-bottom: 1px solid var(--aborder);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: .7rem;
+        }
+
+        .search-box {
+            display: flex;
+            align-items: center;
+            gap: .55rem;
+            background: rgba(255, 255, 255, .04);
+            border: 1px solid rgba(255, 255, 255, .08);
+            border-radius: 9px;
+            padding: .48rem .95rem;
+            min-width: 220px;
+        }
+
+        .search-box input {
+            background: none;
+            border: none;
+            color: var(--cream);
+            font-family: 'DM Sans', sans-serif;
+            font-size: .82rem;
+            outline: none;
+            width: 100%;
+        }
+
+        .search-box input::placeholder {
+            color: var(--amuted);
+        }
+
+        .fsel {
+            background: rgba(255, 255, 255, .04);
+            border: 1px solid rgba(255, 255, 255, .08);
+            border-radius: 9px;
+            padding: .48rem .85rem;
+            color: var(--atext);
+            font-family: 'DM Sans', sans-serif;
+            font-size: .78rem;
+            outline: none;
+            cursor: pointer;
+        }
+
+        .fsel option {
+            background: var(--abg2);
+        }
+
+        .tbtn {
+            padding: .42rem .95rem;
+            border-radius: 7px;
+            font-size: .75rem;
+            font-weight: 600;
+            font-family: 'DM Sans', sans-serif;
+            cursor: pointer;
+            border: none;
+            transition: background .2s, transform .12s;
+        }
+
+        .tbtn:hover {
+            transform: translateY(-1px);
+        }
+
+        .tbtn.lime {
+            background: rgba(126, 200, 80, .11);
+            color: var(--lime);
+            border: 1px solid rgba(126, 200, 80, .18);
+        }
+
+        .tbtn.lime:hover {
+            background: rgba(126, 200, 80, .18);
+        }
+
+        .tbtn.gold {
+            background: rgba(200, 149, 42, .09);
+            color: var(--gold);
+            border: 1px solid rgba(200, 149, 42, .16);
+        }
+
+        .tbtn.gold:hover {
+            background: rgba(200, 149, 42, .16);
+        }
+
+        .tbtn.red {
+            background: rgba(224, 85, 85, .09);
+            color: #e07070;
+            border: 1px solid rgba(224, 85, 85, .18);
+        }
+
+        .tbtn.red:hover {
+            background: rgba(224, 85, 85, .16);
+        }
+
+        .tbl-wrap {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        thead th {
+            background: rgba(255, 255, 255, .025);
+            color: var(--amuted);
+            padding: .85rem 1.1rem;
+            font-size: .68rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: .08em;
+            text-align: left;
+            border-bottom: 1px solid var(--aborder);
+            white-space: nowrap;
+        }
+
+        tbody tr {
+            border-bottom: 1px solid rgba(255, 255, 255, .04);
+            transition: background .14s;
+        }
+
+        tbody tr:last-child {
+            border-bottom: none;
+        }
+
+        tbody tr:hover {
+            background: rgba(126, 200, 80, .025);
+        }
+
+        tbody td {
+            padding: .82rem 1.1rem;
+            font-size: .8rem;
+            color: var(--atext);
+            vertical-align: middle;
+        }
+
+        .td-n {
+            font-weight: 600;
+            color: var(--cream);
+        }
+
+        .td-e a {
+            color: var(--lime);
+            text-decoration: none;
+            font-family: var(--mono);
+            font-size: .75rem;
+        }
+
+        .td-e a:hover {
+            text-decoration: underline;
+        }
+
+        .td-m {
+            max-width: 180px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            color: var(--amuted);
+        }
+
+        .td-dt {
+            font-family: var(--mono);
+            font-size: .72rem;
+            color: var(--amuted);
+        }
+
+        .bdg {
+            display: inline-block;
+            padding: .18rem .6rem;
+            border-radius: 50px;
+            font-size: .63rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: .06em;
+        }
+
+        .bdg-new {
+            background: rgba(126, 200, 80, .11);
+            color: var(--lime);
+            border: 1px solid rgba(126, 200, 80, .18);
+        }
+
+        .bdg-read {
+            background: rgba(255, 255, 255, .04);
+            color: var(--amuted);
+            border: 1px solid rgba(255, 255, 255, .07);
+        }
+
+        .bdg-replied {
+            background: rgba(85, 153, 224, .09);
+            color: var(--ablue);
+            border: 1px solid rgba(85, 153, 224, .18);
+        }
+
+        .td-acts {
+            display: flex;
+            align-items: center;
+            gap: .35rem;
+        }
+
+        .act-btn {
+            width: 26px;
+            height: 26px;
+            border-radius: 6px;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: .77rem;
+            transition: background .14s, transform .14s;
+        }
+
+        .act-btn:hover {
+            transform: scale(1.14);
+        }
+
+        .av {
+            background: rgba(85, 153, 224, .09);
+            color: var(--ablue);
+        }
+
+        .av:hover {
+            background: rgba(85, 153, 224, .18);
+        }
+
+        .ar {
+            background: rgba(126, 200, 80, .09);
+            color: var(--lime);
+        }
+
+        .ar:hover {
+            background: rgba(126, 200, 80, .18);
+        }
+
+        .ad {
+            background: rgba(224, 85, 85, .09);
+            color: #e07070;
+        }
+
+        .ad:hover {
+            background: rgba(224, 85, 85, .18);
+        }
+
+        .empty-s {
+            text-align: center;
+            padding: 3.5rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: .9rem;
+        }
+
+        .empty-s span {
+            font-size: 2.8rem;
+        }
+
+        .empty-s p {
+            color: var(--amuted);
+            font-size: .87rem;
+        }
+
+        .pag {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: .82rem 1.4rem;
+            border-top: 1px solid var(--aborder);
+            font-size: .75rem;
+            color: var(--amuted);
+        }
+
+        .pag-btns {
+            display: flex;
+            gap: .35rem;
+        }
+
+        .pb {
+            width: 28px;
+            height: 28px;
+            border-radius: 6px;
+            border: 1px solid rgba(255, 255, 255, .07);
+            background: transparent;
+            color: var(--amuted);
+            cursor: pointer;
+            font-size: .75rem;
+            transition: background .14s, color .14s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .pb:hover,
+        .pb.on {
+            background: rgba(126, 200, 80, .09);
+            color: var(--lime);
+            border-color: rgba(126, 200, 80, .18);
+        }
+
+        /* Modal */
+        .modal-bg {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, .68);
+            backdrop-filter: blur(4px);
+            z-index: 20000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity .3s, visibility .3s;
+        }
+
+        .modal-bg.show {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .modal {
+            background: var(--acard);
+            border: 1px solid var(--aborder2);
+            border-radius: 18px;
+            width: 100%;
+            max-width: 540px;
+            margin: 1rem;
+            transform: translateY(18px) scale(.97);
+            transition: transform .3s;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .modal-bg.show .modal {
+            transform: none;
+        }
+
+        .modal-hd {
+            padding: 1.4rem 1.8rem;
+            border-bottom: 1px solid var(--aborder);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-t {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.15rem;
+            font-weight: 700;
+            color: var(--cream);
+        }
+
+        .modal-x {
+            width: 30px;
+            height: 30px;
+            border-radius: 7px;
+            background: rgba(255, 255, 255, .05);
+            border: none;
+            color: var(--amuted);
+            cursor: pointer;
+            font-size: 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background .14s;
+        }
+
+        .modal-x:hover {
+            background: rgba(255, 255, 255, .1);
+            color: var(--cream);
+        }
+
+        .modal-bd {
+            padding: 1.4rem 1.8rem;
+        }
+
+        .dr {
+            display: flex;
+            gap: .9rem;
+            margin-bottom: .9rem;
+            padding-bottom: .9rem;
+            border-bottom: 1px solid rgba(255, 255, 255, .05);
+        }
+
+        .dr:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+        }
+
+        .dl {
+            font-size: .7rem;
+            font-weight: 700;
+            letter-spacing: .09em;
+            text-transform: uppercase;
+            color: var(--amuted);
+            min-width: 85px;
+            padding-top: .1rem;
+        }
+
+        .dv {
+            font-size: .85rem;
+            color: var(--atext);
+            line-height: 1.6;
+            flex: 1;
+            word-break: break-word;
+        }
+
+        .dv a {
+            color: var(--lime);
+            text-decoration: none;
+        }
+
+        .msg-box {
+            background: rgba(255, 255, 255, .03);
+            border: 1px solid rgba(255, 255, 255, .07);
+            border-radius: 9px;
+            padding: .95rem;
+            font-size: .83rem;
+            line-height: 1.7;
+            color: var(--atext);
+        }
+
+        .modal-ft {
+            padding: 1.1rem 1.8rem;
+            border-top: 1px solid var(--aborder);
+            display: flex;
+            gap: .7rem;
+            justify-content: flex-end;
+        }
+
+        /* Security log */
+        .log-list {
+            display: flex;
+            flex-direction: column;
+            gap: .55rem;
+        }
+
+        .log-e {
+            display: flex;
+            align-items: center;
+            gap: .9rem;
+            background: var(--acard);
+            border: 1px solid var(--aborder);
+            border-radius: 11px;
+            padding: .9rem 1.1rem;
+            font-size: .8rem;
+        }
+
+        .log-e.s {
+            border-left: 3px solid var(--lime);
+        }
+
+        .log-e.w {
+            border-left: 3px solid var(--gold);
+        }
+
+        .log-e.d {
+            border-left: 3px solid var(--ared);
+        }
+
+        .log-e.i {
+            border-left: 3px solid var(--ablue);
+        }
+
+        .log-ico {
+            font-size: 1.1rem;
+            flex-shrink: 0;
+            width: 22px;
+            text-align: center;
+        }
+
+        .log-m {
+            flex: 1;
+            color: var(--atext);
+        }
+
+        .log-t {
+            font-family: var(--mono);
+            font-size: .68rem;
+            color: var(--amuted);
+            flex-shrink: 0;
+        }
+
+        /* Settings */
+        .set-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.3rem;
+        }
+
+        .set-card {
+            background: var(--acard);
+            border: 1px solid var(--aborder);
+            border-radius: 16px;
+            padding: 1.7rem;
+        }
+
+        .set-card h3 {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.05rem;
+            font-weight: 700;
+            color: var(--cream);
+            margin-bottom: 1.1rem;
+            padding-bottom: .75rem;
+            border-bottom: 1px solid var(--aborder);
+        }
+
+        .set-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: .9rem;
+        }
+
+        .set-row:last-child {
+            margin-bottom: 0;
+        }
+
+        .set-lbl {
+            font-size: .83rem;
+            color: var(--atext);
+        }
+
+        .set-desc {
+            font-size: .72rem;
+            color: var(--amuted);
+            margin-top: .1rem;
+        }
+
+        .toggle {
+            position: relative;
+            width: 38px;
+            height: 21px;
+            background: rgba(255, 255, 255, .09);
+            border-radius: 50px;
+            cursor: pointer;
+            transition: background .3s;
+            flex-shrink: 0;
+            border: none;
+        }
+
+        .toggle.on {
+            background: var(--lime);
+        }
+
+        .toggle::after {
+            content: '';
+            position: absolute;
+            top: 2.5px;
+            left: 2.5px;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: white;
+            transition: transform .3s;
+        }
+
+        .toggle.on::after {
+            transform: translateX(17px);
+        }
+
+        .set-inp {
+            background: rgba(255, 255, 255, .05);
+            border: 1px solid rgba(255, 255, 255, .09);
+            border-radius: 8px;
+            padding: .48rem .78rem;
+            color: var(--cream);
+            font-family: 'DM Sans', sans-serif;
+            font-size: .8rem;
+            outline: none;
+            width: 100%;
+            margin-bottom: .55rem;
+            transition: border-color .2s;
+        }
+
+        .set-inp:focus {
+            border-color: var(--lime);
+        }
+
+        .btn-save {
+            padding: .58rem 1.3rem;
+            background: var(--lime);
+            color: var(--abg);
+            border: none;
+            border-radius: 7px;
+            font-weight: 700;
+            font-size: .8rem;
+            font-family: 'DM Sans', sans-serif;
+            cursor: pointer;
+            transition: background .2s;
+        }
+
+        .btn-save:hover {
+            background: #8fd960;
+        }
+
+        /* ═══════════════════════════════════════
+   RESPONSIVE
+═══════════════════════════════════════ */
+        @media(max-width:960px) {
+
+            .hero-inner,
+            .about-grid,
+            .contact-grid,
+            .footer-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .orbit-wrap {
+                display: none;
+            }
+
+            .svc-grid,
+            .met-grid,
+            .chart-row,
+            .set-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .prod-grid,
+            .quick-services-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .snav-links {
+                display: none;
+            }
+
+            .sidebar {
+                display: none;
+            }
+
+            .met-grid {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+
+        @media(max-width:600px) {
+            .prod-grid {
+                grid-template-columns: 1fr 1fr;
+            }
+
+            .frow {
+                grid-template-columns: 1fr;
+            }
+
+            .stats-row,
+            .val-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- ── CURSOR ── -->
+    <div id="cursor"></div>
+    <div id="cursor-ring"></div>
+
+    <!-- ── LOADER ── -->
+    <div id="loader">
+        <div class="ld-logo">Mauli<span>Tredars</span></div>
+        <div class="ld-bar-wrap">
+            <div class="ld-bar"></div>
+        </div>
+        <div class="ld-txt">Loading experience...</div>
+    </div>
+
+    <!-- ── SCROLL PROGRESS ── -->
+    <div id="sprog"></div>
+
+    <!-- ── PAGE WIPE ── -->
+    <div id="wipe"><span class="wipe-txt" id="wipe-txt">Loading</span></div>
+
+    <!-- ── TOAST ── -->
+    <div id="toast"></div>
+
+    <!-- ── BACK TO TOP ── -->
+    <button id="btt" onclick="scrollTo({top:0,behavior:'smooth'})">↑</button>
+
+    <!-- ══════════════════════════════════════════════
+     WEBSITE NAV (shown only on website views)
+══════════════════════════════════════════════ -->
+    <nav id="site-nav">
+        <a class="snav-logo" onclick="nav('home')">Mauli<span>Tredars</span></a>
+        <ul class="snav-links">
+            <li><a onclick="nav('home')" data-p="home">Home</a></li>
+            <li><a onclick="nav('about')" data-p="about">About</a></li>
+            <li><a onclick="nav('services')" data-p="services">Services</a></li>
+            <li><a onclick="nav('products')" data-p="products">Products</a></li>
+            <li><a onclick="nav('contact')" data-p="contact" class="snav-cta">Contact</a></li>
+            <li><a onclick="nav('admin')" class="snav-admin-pill"><span class="snav-badge"></span>Admin</a></li>
+        </ul>
+    </nav>
+
+    <!-- ══════════════════════════════════════════════
+     VIEW: HOME
+══════════════════════════════════════════════ -->
+    <div class="view" id="v-home">
+        <!-- HERO -->
+        <section id="hero">
+            <div class="hero-bg"></div>
+            <div class="hero-grain"></div>
+            <div id="particles-c"></div>
+            <div class="hero-inner">
+                <div>
+                    <div class="hero-badge">Since 1998 · International Traders</div>
+                    <h1 class="hero-title">Trade Smart.<em>Trade Global.</em>Trade Quality.</h1>
+                    <p class="hero-sub">From Farm to the World 🌾</p>
+                    <p class="hero-desc">Mauli Tredars connects Maharashtra's finest farms to global markets —
+                        delivering premium fresh produce with quality, compliance, and care.</p>
+                    <div class="hero-btns">
+                        <a class="btn-p" onclick="nav('products')">Explore Products</a>
+                        <a class="btn-o" onclick="nav('contact')">Get a Quote</a>
+                    </div>
+                    <div class="hero-stats">
+                        <div><span class="hstat-num" data-count="25" data-suf="+">0+</span><span class="hstat-lbl">Years
+                                of Trust</span></div>
+                        <div><span class="hstat-num">$8.2M</span><span class="hstat-lbl">Annual Revenue</span></div>
+                        <div><span class="hstat-num" data-count="35" data-suf="K+">0K+</span><span
+                                class="hstat-lbl">Global Partners</span></div>
+                    </div>
+                </div>
+                <div class="orbit-wrap">
+                    <div class="orbit-ring or1"></div>
+                    <div class="orbit-ring or2"></div>
+                    <div class="orbit-ring or3"></div>
+                    <div class="orbit-center">Farm<br>to<br>World</div>
+                </div>
+            </div>
+        </section>
+        <div class="marquee-wrap">
+            <div class="marquee-track">
+                <div class="mq-item">Fresh Exports</div>
+                <div class="mq-item">Maharashtra Farms</div>
+                <div class="mq-item">Global Distribution</div>
+                <div class="mq-item">Quality Certified</div>
+                <div class="mq-item">Farm to World</div>
+                <div class="mq-item">Since 1998</div>
+                <div class="mq-item">International Trade</div>
+                <div class="mq-item">Mauli Tredars</div>
+                <div class="mq-item">Fresh Exports</div>
+                <div class="mq-item">Maharashtra Farms</div>
+                <div class="mq-item">Global Distribution</div>
+                <div class="mq-item">Quality Certified</div>
+                <div class="mq-item">Farm to World</div>
+                <div class="mq-item">Since 1998</div>
+                <div class="mq-item">International Trade</div>
+                <div class="mq-item">Mauli Tredars</div>
+            </div>
+        </div>
+        <!-- Services preview -->
+        <section style="background:var(--cream);padding:5rem 5%;">
+            <div class="container">
+                <div style="text-align:center;margin-bottom:2.8rem;" class="reveal">
+                    <div class="stag" style="justify-content:center;">What We Do</div>
+                    <h2 class="stitle" style="text-align:center;">Our <span>Core Services</span></h2>
+                </div>
+                <div class="quick-services-grid">
+                    <div class="qs-card reveal d1" onclick="nav('services')"><span class="qs-icon">🚢</span>
+                        <h4>Import & Export</h4>
+                        <p>Full-cycle global trade of fresh produce</p>
+                    </div>
+                    <div class="qs-card reveal d2" onclick="nav('services')"><span class="qs-icon">📦</span>
+                        <h4>Distribution</h4>
+                        <p>Worldwide purchasing, delivery & valuation</p>
+                    </div>
+                    <div class="qs-card reveal d3" onclick="nav('services')"><span class="qs-icon">📊</span>
+                        <h4>Market Analysis</h4>
+                        <p>Insights & opportunities for decisions</p>
+                    </div>
+                    <div class="qs-card reveal d4" onclick="nav('services')"><span class="qs-icon">🌐</span>
+                        <h4>Consulting</h4>
+                        <p>Navigate international regulations</p>
+                    </div>
+                </div>
+                <div style="text-align:center;margin-top:2.2rem;" class="reveal"><a class="btn-p"
+                        style="background:var(--green2);color:var(--cream);" onclick="nav('services')">View All Services
+                        →</a></div>
+            </div>
+        </section>
+        <!-- Products preview -->
+        <section style="background:var(--dark);padding:5rem 5%;">
+            <div class="container">
+                <div style="display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:2.2rem;flex-wrap:wrap;gap:1rem;"
+                    class="reveal">
+                    <div>
+                        <div class="stag" style="color:var(--lime);">Featured Products</div>
+                        <h2 class="stitle" style="color:var(--cream);">Premium <span
+                                style="color:var(--lime)">Produce</span></h2>
+                    </div>
+                    <a class="btn-o" onclick="nav('products')">All Products →</a>
+                </div>
+                <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:1.2rem;" class="reveal">
+                    <div class="prod-card"><span class="prod-icon">🥭</span>
+                        <h4>Alphonso Mango</h4>
+                        <p>Export grade</p><span class="prod-tag">Fruit</span>
+                    </div>
+                    <div class="prod-card"><span class="prod-icon">🧅</span>
+                        <h4>Nashik Onion</h4>
+                        <p>World-renowned</p><span class="prod-tag">Vegetable</span>
+                    </div>
+                    <div class="prod-card"><span class="prod-icon">🍇</span>
+                        <h4>Thompson Grapes</h4>
+                        <p>Premium quality</p><span class="prod-tag">Fruit</span>
+                    </div>
+                    <div class="prod-card"><span class="prod-icon">🌶️</span>
+                        <h4>Green Chilli</h4>
+                        <p>Fresh & dried</p><span class="prod-tag">Spice</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+        <!-- Live enquiry counter -->
+        <section style="background:var(--cream);padding:3.5rem 5%;">
+            <div class="container">
+                <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:1.2rem;text-align:center;"
+                    class="reveal">
+                    <div class="sbox" id="hm-total"><span class="n">—</span><span class="l">Total Enquiries</span></div>
+                    <div class="sbox" id="hm-new"><span class="n">—</span><span class="l">New Enquiries</span></div>
+                    <div class="sbox" id="hm-countries"><span class="n">—</span><span class="l">Countries Reached</span>
+                    </div>
+                    <div class="sbox" id="hm-products"><span class="n">16</span><span class="l">Export Products</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+        <div class="cta-strip reveal">
+            <div class="container">
+                <h2>Ready to Trade Globally?</h2>
+                <p>Contact our team for custom quotes, product catalogs, and export documentation.</p>
+                <a class="btn-p" style="background:var(--dark);color:var(--cream);" onclick="nav('contact')">Start a
+                    Conversation</a>
+            </div>
+        </div>
+        <footer>
+            <div class="container">
+                <div class="footer-grid">
+                    <div class="footer-brand">
+                        <div class="snav-logo" onclick="nav('home')">Mauli<span style="color:var(--lime)">Tredars</span>
+                        </div>
+                        <p>Connecting Maharashtra's finest farms to global markets since 1998.</p>
+                    </div>
+                    <div class="footer-col">
+                        <h5>Pages</h5>
+                        <ul>
+                            <li><a onclick="nav('home')">Home</a></li>
+                            <li><a onclick="nav('about')">About</a></li>
+                            <li><a onclick="nav('services')">Services</a></li>
+                            <li><a onclick="nav('products')">Products</a></li>
+                        </ul>
+                    </div>
+                    <div class="footer-col">
+                        <h5>Services</h5>
+                        <ul>
+                            <li><a onclick="nav('services')">Import & Export</a></li>
+                            <li><a onclick="nav('services')">Distribution</a></li>
+                            <li><a onclick="nav('services')">Market Analysis</a></li>
+                            <li><a onclick="nav('services')">Consulting</a></li>
+                        </ul>
+                    </div>
+                    <div class="footer-col">
+                        <h5>Contact</h5>
+                        <ul>
+                            <li><a href="tel:+919890022243">+91 98900 22243</a></li>
+                            <li><a href="mailto:maulicotton@gmail.com">maulicotton@gmail.com</a></li>
+                            <li><a onclick="nav('admin')" class="admin-footer-link">🔐 Admin Panel</a></li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="footer-bottom">
+                    <p>© 2025 <span>Mauli Tredars</span>. Jamner, Jalgaon, Maharashtra.</p>
+                    <div class="socials"><a href="#">💬</a><a href="mailto:maulicotton@gmail.com">✉️</a><a
+                            href="#">🔗</a></div>
+                </div>
+            </div>
+        </footer>
+    </div>
+
+    <!-- ══════════════════════════════════════════════
+     VIEW: ABOUT
+══════════════════════════════════════════════ -->
+    <div class="view" id="v-about">
+        <div class="page-hero">
+            <div class="page-hero-bg"
+                style="background:radial-gradient(ellipse 60% 80% at 30% 50%,rgba(45,110,69,.28) 0%,transparent 65%)">
+            </div>
+            <div class="page-hero-content">
+                <div class="page-tag">About Mauli Tredars</div>
+                <h1>Rooted in <span>Maharashtra</span>,<br>Reaching the World</h1>
+            </div>
+        </div>
+        <section style="background:var(--white);padding:5rem 5%;">
+            <div class="container">
+                <div class="about-grid">
+                    <div class="reveal-l">
+                        <div class="about-img-card">
+                            <h3>Our Story</h3>
+                            <p>Founded in 1998 in Jamner, Maharashtra, Mauli Tredars has grown from a local commodity
+                                trader into a trusted international agricultural export brand.</p>
+                            <div class="year-pill">🌿 Est. 1998 · Jamner, Maharashtra</div>
+                        </div>
+                        <div class="val-grid">
+                            <div class="val-card"><span class="val-icon">🌱</span>
+                                <h4>Sustainability</h4>
+                                <p>Responsible farming partnerships that protect the planet.</p>
+                            </div>
+                            <div class="val-card"><span class="val-icon">🤝</span>
+                                <h4>Partnership</h4>
+                                <p>Long-term relationships beyond transactions.</p>
+                            </div>
+                            <div class="val-card"><span class="val-icon">🏆</span>
+                                <h4>Quality</h4>
+                                <p>Certified to meet highest international standards.</p>
+                            </div>
+                            <div class="val-card"><span class="val-icon">⚡</span>
+                                <h4>Efficiency</h4>
+                                <p>Streamlined logistics from farm gate to destination.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="about-text reveal-r">
+                        <h2>Global Trading & Distribution Consulting</h2>
+                        <p>At Mauli Tredars, we specialize in providing comprehensive consulting solutions for global
+                            trading and distribution. Our expertise helps businesses navigate international markets with
+                            confidence and efficiency.</p>
+                        <p>From market research and sourcing strategies to logistics planning, documentation, and
+                            regulatory compliance, we offer end-to-end guidance tailored to each client's needs.</p>
+                        <div class="highlight-block">
+                            <p>"We focus on optimizing global supply chains, minimizing trade risks, and identifying new
+                                market opportunities to ensure sustainable business growth. With a strong network of
+                                international partners, Mauli Tredars empowers clients to achieve long-term success."
+                            </p>
+                        </div>
+                        <p>With integrity, innovation, and dedication at the core of our operations, Mauli Tredars
+                            continues to expand its reach while setting benchmarks for reliability and excellence in the
+                            international trading industry.</p>
+                        <div class="stats-row">
+                            <div class="sbox"><span class="n">25+</span><span class="l">Years Active</span></div>
+                            <div class="sbox"><span class="n">50+</span><span class="l">Products</span></div>
+                            <div class="sbox"><span class="n">500+</span><span class="l">Farm Partners</span></div>
+                        </div>
+                        <div style="margin-top:1.8rem;"><a class="btn-p" onclick="nav('contact')">Work With Us →</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+        <!-- Timeline -->
+        <section style="background:var(--cream);padding:5rem 5%;">
+            <div class="container">
+                <div style="text-align:center;margin-bottom:2.8rem;" class="reveal">
+                    <div class="stag" style="justify-content:center;">Our Journey</div>
+                    <h2 class="stitle" style="text-align:center;">Growing <span>Through the Years</span></h2>
+                </div>
+                <div class="tl-wrap">
+                    <div class="tl-line"></div>
+                    <div class="tl-items">
+                        <div class="tl-row reveal">
+                            <div class="tl-box">
+                                <div class="tl-yr">1998</div>
+                                <h4>The Beginning</h4>
+                                <p>Founded in Jamner with a vision to connect local farmers to global buyers.</p>
+                            </div>
+                            <div class="tl-dot"></div>
+                            <div style="flex:1"></div>
+                        </div>
+                        <div class="tl-row r reveal">
+                            <div class="tl-box">
+                                <div class="tl-yr">2003</div>
+                                <h4>First International Exports</h4>
+                                <p>Began exporting Nashik onions and Alphonso mangoes to Middle East & Europe.</p>
+                            </div>
+                            <div class="tl-dot g"></div>
+                            <div style="flex:1"></div>
+                        </div>
+                        <div class="tl-row reveal">
+                            <div class="tl-box">
+                                <div class="tl-yr">2008</div>
+                                <h4>Consulting Division</h4>
+                                <p>Launched market analysis and international business consulting services.</p>
+                            </div>
+                            <div class="tl-dot"></div>
+                            <div style="flex:1"></div>
+                        </div>
+                        <div class="tl-row r reveal">
+                            <div class="tl-box dk">
+                                <div class="tl-yr">Today</div>
+                                <h4>$8.2M Global Business</h4>
+                                <p>35,000+ global partners, 50+ products, setting benchmarks for excellence.</p>
+                            </div>
+                            <div class="tl-dot"></div>
+                            <div style="flex:1"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+        <footer>
+            <div class="container">
+                <div class="footer-bottom"
+                    style="justify-content:center;flex-direction:column;text-align:center;gap:.7rem;">
+                    <p style="font-size:.78rem;color:rgba(245,240,232,.28);">© 2025 <span
+                            style="color:var(--lime)">Mauli Tredars</span>. Jamner, Jalgaon, Maharashtra 424208</p>
+                </div>
+            </div>
+        </footer>
+    </div>
+
+    <!-- ══════════════════════════════════════════════
+     VIEW: SERVICES
+══════════════════════════════════════════════ -->
+    <div class="view" id="v-services">
+        <div class="page-hero">
+            <div class="page-hero-bg"
+                style="background:radial-gradient(ellipse 50% 70% at 80% 30%,rgba(200,149,42,.13) 0%,transparent 60%),radial-gradient(ellipse 60% 60% at 20% 80%,rgba(45,110,69,.22) 0%,transparent 55%)">
+            </div>
+            <div class="page-hero-content">
+                <div class="page-tag">What We Offer</div>
+                <h1>Our <span>Services</span></h1>
+                <p
+                    style="color:rgba(245,240,232,.52);margin-top:.9rem;max-width:520px;font-size:.97rem;line-height:1.7;">
+                    End-to-end global trade solutions — from farm sourcing to international doorstep delivery.</p>
+            </div>
+        </div>
+        <section style="background:var(--white);padding:5rem 5%;">
+            <div class="container">
+                <div class="svc-grid">
+                    <div class="svc-card dk reveal d1"><span class="svc-num">01</span>
+                        <div class="svc-icon">🚢</div>
+                        <h3>Import & Export</h3>
+                        <p>Complete import-export cycle of fresh produce and agricultural commodities. Reliable,
+                            compliant, efficient.</p>
+                        <ul class="svc-list">
+                            <li>Fresh fruits & vegetables export</li>
+                            <li>Agricultural commodity trading</li>
+                            <li>Phytosanitary certification support</li>
+                            <li>Customs clearance handling</li>
+                            <li>Cold chain management</li>
+                        </ul>
+                    </div>
+                    <div class="svc-card reveal d2"><span class="svc-num">02</span>
+                        <div class="svc-icon">📦</div>
+                        <h3>Product Distribution</h3>
+                        <p>Worldwide purchasing, delivery, and commodity valuation analysis — every shipment arrives in
+                            perfect condition.</p>
+                        <ul class="svc-list">
+                            <li>Global procurement & sourcing</li>
+                            <li>Last-mile delivery coordination</li>
+                            <li>Commodity price analysis</li>
+                            <li>Quality inspection & grading</li>
+                            <li>Packaging & labelling compliance</li>
+                        </ul>
+                    </div>
+                    <div class="svc-card reveal d2"><span class="svc-num">03</span>
+                        <div class="svc-icon">📊</div>
+                        <h3>Market Analysis</h3>
+                        <p>Latest opportunities, insights, and perspectives on global agricultural markets for better
+                            decisions.</p>
+                        <ul class="svc-list">
+                            <li>Commodity price forecasting</li>
+                            <li>Demand-supply trend reports</li>
+                            <li>New market opportunity mapping</li>
+                            <li>Seasonal export calendar planning</li>
+                            <li>Competitor & buyer analysis</li>
+                        </ul>
+                    </div>
+                    <div class="svc-card reveal d3"><span class="svc-num">04</span>
+                        <div class="svc-icon">🌐</div>
+                        <h3>International Business Consulting</h3>
+                        <p>Guide clients through local regulations, trade policies, customs procedures, and
+                            international compliance frameworks.</p>
+                        <ul class="svc-list">
+                            <li>FSSAI & export license support</li>
+                            <li>Country-specific trade regulations</li>
+                            <li>Documentation & compliance</li>
+                            <li>Buyer identification & negotiation</li>
+                            <li>JV & partnership facilitation</li>
+                        </ul>
+                    </div>
+                </div>
+                <div style="text-align:center;margin-top:2.8rem;" class="reveal"><a class="btn-p"
+                        onclick="nav('contact')">Get a Service Quote →</a></div>
+            </div>
+        </section>
+        <footer>
+            <div class="container">
+                <div class="footer-bottom"
+                    style="justify-content:center;flex-direction:column;text-align:center;gap:.7rem;">
+                    <p style="font-size:.78rem;color:rgba(245,240,232,.28);">© 2025 <span
+                            style="color:var(--lime)">Mauli Tredars</span>. Jamner, Jalgaon, Maharashtra 424208</p>
+                </div>
+            </div>
+        </footer>
+    </div>
+
+    <!-- ══════════════════════════════════════════════
+     VIEW: PRODUCTS
+══════════════════════════════════════════════ -->
+    <div class="view" id="v-products">
+        <div class="page-hero" style="background:var(--dark);">
+            <div class="page-hero-bg"
+                style="background:radial-gradient(ellipse 70% 50% at 50% 100%,rgba(45,110,69,.28) 0%,transparent 55%)">
+            </div>
+            <div class="page-hero-content">
+                <div class="page-tag">Our Range</div>
+                <h1 style="color:var(--cream)">Premium <span>Produce</span></h1>
+                <p style="color:rgba(245,240,232,.52);margin-top:.9rem;max-width:500px;line-height:1.7;">Fresh,
+                    farm-to-export quality fruits, vegetables, and spices sourced from the fertile soils of Maharashtra.
+                </p>
+                <div class="prod-filter">
+                    <button class="flt-btn active" onclick="filterProd('all',this)">All Products</button>
+                    <button class="flt-btn" onclick="filterProd('fruit',this)">🍊 Fruits</button>
+                    <button class="flt-btn" onclick="filterProd('vegetable',this)">🥦 Vegetables</button>
+                    <button class="flt-btn" onclick="filterProd('spice',this)">🌶️ Spices</button>
+                </div>
+            </div>
+        </div>
+        <section style="background:var(--dark);padding:2rem 5% 5rem;">
+            <div class="container">
+                <div class="prod-grid" id="prod-grid">
+                    <div class="prod-card reveal d1" data-cat="fruit"><span class="prod-icon">🥭</span>
+                        <h4>Alphonso Mango</h4>
+                        <p>World's finest variety</p><span class="prod-tag">Fruit</span><span class="prod-season">Apr –
+                            Jun</span>
+                    </div>
+                    <div class="prod-card reveal d1" data-cat="fruit"><span class="prod-icon">🍇</span>
+                        <h4>Thompson Grapes</h4>
+                        <p>Premium export quality</p><span class="prod-tag">Fruit</span><span class="prod-season">Jan –
+                            Mar</span>
+                    </div>
+                    <div class="prod-card reveal d2" data-cat="fruit"><span class="prod-icon">🍊</span>
+                        <h4>Nagpur Orange</h4>
+                        <p>Sweet, juicy, GI-tagged</p><span class="prod-tag">Fruit</span><span class="prod-season">Nov –
+                            Feb</span>
+                    </div>
+                    <div class="prod-card reveal d2" data-cat="fruit"><span class="prod-icon">🍌</span>
+                        <h4>Banana</h4>
+                        <p>Year-round supply</p><span class="prod-tag">Fruit</span><span
+                            class="prod-season">Year-round</span>
+                    </div>
+                    <div class="prod-card reveal d1" data-cat="fruit"><span class="prod-icon">🍈</span>
+                        <h4>Pomegranate</h4>
+                        <p>Bhagwa & Arils export</p><span class="prod-tag">Fruit</span><span class="prod-season">Oct –
+                            Mar</span>
+                    </div>
+                    <div class="prod-card reveal d2" data-cat="fruit"><span class="prod-icon">🍋</span>
+                        <h4>Lemon</h4>
+                        <p>Seedless variety</p><span class="prod-tag">Fruit</span><span
+                            class="prod-season">Year-round</span>
+                    </div>
+                    <div class="prod-card reveal d1" data-cat="vegetable"><span class="prod-icon">🧅</span>
+                        <h4>Nashik Onion</h4>
+                        <p>World-renowned, GI-tagged</p><span class="prod-tag">Vegetable</span><span
+                            class="prod-season">Nov – May</span>
+                    </div>
+                    <div class="prod-card reveal d2" data-cat="vegetable"><span class="prod-icon">🧄</span>
+                        <h4>Garlic</h4>
+                        <p>Aromatic Mahabaleshwar</p><span class="prod-tag">Vegetable</span><span
+                            class="prod-season">Mar – May</span>
+                    </div>
+                    <div class="prod-card reveal d2" data-cat="vegetable"><span class="prod-icon">🥔</span>
+                        <h4>Potato</h4>
+                        <p>Bulk container export</p><span class="prod-tag">Vegetable</span><span class="prod-season">Jan
+                            – Apr</span>
+                    </div>
+                    <div class="prod-card reveal d3" data-cat="vegetable"><span class="prod-icon">🍅</span>
+                        <h4>Tomato</h4>
+                        <p>Roma & cherry varieties</p><span class="prod-tag">Vegetable</span><span
+                            class="prod-season">Oct – Feb</span>
+                    </div>
+                    <div class="prod-card reveal d3" data-cat="vegetable"><span class="prod-icon">🥦</span>
+                        <h4>Broccoli</h4>
+                        <p>Cold-chain shipped</p><span class="prod-tag">Vegetable</span><span class="prod-season">Nov –
+                            Mar</span>
+                    </div>
+                    <div class="prod-card reveal d1" data-cat="spice"><span class="prod-icon">🌶️</span>
+                        <h4>Green Chilli</h4>
+                        <p>Fresh & sundried</p><span class="prod-tag">Spice</span><span
+                            class="prod-season">Year-round</span>
+                    </div>
+                    <div class="prod-card reveal d2" data-cat="spice"><span class="prod-icon">🫚</span>
+                        <h4>Turmeric</h4>
+                        <p>Sangli variety</p><span class="prod-tag">Spice</span><span class="prod-season">Dec –
+                            Feb</span>
+                    </div>
+                    <div class="prod-card reveal d3" data-cat="spice"><span class="prod-icon">🌿</span>
+                        <h4>Coriander</h4>
+                        <p>Seeds & fresh leaves</p><span class="prod-tag">Spice</span><span
+                            class="prod-season">Year-round</span>
+                    </div>
+                    <div class="prod-card reveal d3" data-cat="spice"><span class="prod-icon">🌰</span>
+                        <h4>Fenugreek</h4>
+                        <p>Seeds & leaves export</p><span class="prod-tag">Spice</span><span class="prod-season">Feb –
+                            Apr</span>
+                    </div>
+                    <div class="prod-card reveal d4" data-cat="spice"><span class="prod-icon">🫙</span>
+                        <h4>Cumin Seeds</h4>
+                        <p>Gujarat & Rajasthan</p><span class="prod-tag">Spice</span><span class="prod-season">Mar –
+                            May</span>
+                    </div>
+                </div>
+                <div style="text-align:center;margin-top:2.8rem;" class="reveal"><a class="btn-p"
+                        onclick="nav('contact')">Request Product Catalog →</a></div>
+            </div>
+        </section>
+        <footer>
+            <div class="container">
+                <div class="footer-bottom"
+                    style="justify-content:center;flex-direction:column;text-align:center;gap:.7rem;">
+                    <p style="font-size:.78rem;color:rgba(245,240,232,.28);">© 2025 <span
+                            style="color:var(--lime)">Mauli Tredars</span>. Jamner, Jalgaon, Maharashtra 424208</p>
+                </div>
+            </div>
+        </footer>
+    </div>
+
+    <!-- ══════════════════════════════════════════════
+     VIEW: CONTACT
+══════════════════════════════════════════════ -->
+    <div class="view" id="v-contact">
+        <div class="page-hero">
+            <div class="page-hero-bg"
+                style="background:radial-gradient(ellipse 60% 80% at 20% 50%,rgba(200,149,42,.1) 0%,transparent 55%),radial-gradient(ellipse 50% 50% at 80% 80%,rgba(45,110,69,.18) 0%,transparent 55%)">
+            </div>
+            <div class="page-hero-content">
+                <div class="page-tag">Get In Touch</div>
+                <h1>Let's Do <span>Business</span></h1>
+            </div>
+        </div>
+        <section style="background:var(--dark);padding:3rem 5% 5rem;">
+            <div class="container">
+                <div class="contact-grid">
+                    <div class="ci-cards reveal-l">
+                        <div class="ci-card">
+                            <div class="ci-ico">📍</div>
+                            <div class="ci-txt"><strong>Office Address</strong><span>Mauli Park, Deulgaon Road,
+                                    Fattepur,<br>Jamner, Jalgaon, Maharashtra 424208</span></div>
+                        </div>
+                        <div class="ci-card">
+                            <div class="ci-ico">📞</div>
+                            <div class="ci-txt"><strong>Phone Number</strong><span>+91 98900 22243</span></div>
+                        </div>
+                        <div class="ci-card">
+                            <div class="ci-ico">✉️</div>
+                            <div class="ci-txt"><strong>Email Address</strong><span>maulicotton@gmail.com</span></div>
+                        </div>
+                        <div class="ci-card">
+                            <div class="ci-ico">🕐</div>
+                            <div class="ci-txt"><strong>Business Hours</strong><span>Mon – Sat: 9:00 AM – 6:00 PM
+                                    IST<br>Sunday: Closed</span></div>
+                        </div>
+                        <!-- LIVE STATS from DB -->
+                        <div class="ci-card" style="background:rgba(126,200,80,.06);border-color:rgba(126,200,80,.18);">
+                            <div class="ci-ico" style="background:linear-gradient(135deg,var(--lime),var(--green2));">📬
+                            </div>
+                            <div class="ci-txt"><strong style="color:var(--lime);">Live Enquiry Stats</strong><span
+                                    id="contact-live-stats">Loading…</span></div>
+                        </div>
+                    </div>
+                    <div class="form-card reveal-r">
+                        <div id="contact-form-wrap">
+                            <h3>Send an Enquiry</h3>
+                            <div class="fsub">We'll respond within 24 business hours. All enquiries go directly to our
+                                admin dashboard.</div>
+                            <div class="frow">
+                                <div class="fg"><label>Full Name *</label><input id="fn" type="text"
+                                        placeholder="John Smith" />
+                                    <div class="ferr" id="fe-n">Please enter your name.</div>
+                                </div>
+                                <div class="fg"><label>Company</label><input id="fc" type="text"
+                                        placeholder="Your Company" /></div>
+                            </div>
+                            <div class="frow">
+                                <div class="fg"><label>Email *</label><input id="fe" type="email"
+                                        placeholder="john@company.com" />
+                                    <div class="ferr" id="fe-e">Please enter a valid email.</div>
+                                </div>
+                                <div class="fg"><label>Phone</label><input id="fp" type="tel"
+                                        placeholder="+1 234 567 890" /></div>
+                            </div>
+                            <div class="fg"><label>Country *</label>
+                                <select id="fco">
+                                    <option value="">Select country</option>
+                                    <option>India</option>
+                                    <option>UAE</option>
+                                    <option>Saudi Arabia</option>
+                                    <option>United Kingdom</option>
+                                    <option>USA</option>
+                                    <option>Germany</option>
+                                    <option>Netherlands</option>
+                                    <option>Singapore</option>
+                                    <option>Malaysia</option>
+                                    <option>Other</option>
+                                </select>
+                                <div class="ferr" id="fe-co">Please select your country.</div>
+                            </div>
+                            <div class="fg"><label>Service Interest *</label>
+                                <select id="fsv">
+                                    <option value="">Select service</option>
+                                    <option>Fruits Export</option>
+                                    <option>Vegetables Export</option>
+                                    <option>Spices Export</option>
+                                    <option>Product Distribution</option>
+                                    <option>Market Analysis</option>
+                                    <option>International Business Consulting</option>
+                                    <option>Product Catalog Request</option>
+                                    <option>Other</option>
+                                </select>
+                                <div class="ferr" id="fe-sv">Please select a service.</div>
+                            </div>
+                            <div class="fg"><label>Message *</label><textarea id="fm" maxlength="500"
+                                    placeholder="Tell us about your requirements…"></textarea>
+                                <div class="ccount"><span id="cc">0</span>/500</div>
+                                <div class="ferr" id="fe-m">Please enter your message (min 10 chars).</div>
+                            </div>
+                            <button class="btn-submit" id="fsbtn" onclick="submitForm()">Send Enquiry →</button>
+                        </div>
+                        <div class="form-success" id="fs-success">
+                            <span class="fs-icon">✅</span>
+                            <h3>Enquiry Received!</h3>
+                            <p>Thank you for reaching out to Mauli Tredars.<br>Our team will contact you within 24
+                                business hours.</p>
+                            <p style="margin-top:.7rem;font-size:.78rem;color:rgba(245,240,232,.35);">Your enquiry is
+                                now visible in the Admin Dashboard.</p>
+                            <div class="btn-reset" onclick="resetForm()">Send Another Enquiry</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+        <footer>
+            <div class="container">
+                <div class="footer-bottom"
+                    style="justify-content:center;flex-direction:column;text-align:center;gap:.7rem;">
+                    <p style="font-size:.78rem;color:rgba(245,240,232,.28);">© 2025 <span
+                            style="color:var(--lime)">Mauli Tredars</span>. Jamner, Jalgaon, Maharashtra 424208</p>
+                </div>
+            </div>
+        </footer>
+    </div>
+
+    <!-- ══════════════════════════════════════════════
+     VIEW: ADMIN
+══════════════════════════════════════════════ -->
+    <div class="view admin-area" id="v-admin">
+
+        <!-- LOGIN -->
+        <div id="login-view">
+            <div class="login-ambg"></div>
+            <div class="login-grid"></div>
+            <div class="login-card">
+                <div class="login-lockico">🔐</div>
+                <div class="login-logo-t">Mauli<span>Tredars</span></div>
+                <div class="login-tagline">Admin Control Panel</div>
+                <h2 class="login-title">Secure Login</h2>
+                <p class="login-sub">Access restricted to authorized administrators only.</p>
+                <div id="login-form-fields">
+                    <div class="login-err" id="lerr"><span>⚠️</span><span id="lerr-msg">Invalid credentials.</span>
+                    </div>
+                    <div class="aig"><label>Username</label><span class="aig-icon">👤</span><input type="text" id="lu"
+                            placeholder="admin" onkeydown="if(event.key==='Enter')doLogin()" /></div>
+                    <div class="aig"><label>Password</label><span class="aig-icon">🔑</span><input type="password"
+                            id="lp" placeholder="••••••••" onkeydown="if(event.key==='Enter')doLogin()" /><span
+                            class="aig-toggle" onclick="togglePw()">👁</span></div>
+                    <div class="att-warn" id="att-warn"></div>
+                    <button class="btn-login" id="lbtn" onclick="doLogin()">Sign In to Dashboard</button>
+                    <div class="login-hint"><strong>Demo Credentials:</strong><br>Username: <strong>admin</strong>
+                        &nbsp;|&nbsp; Password: <strong>Mauli@2025</strong></div>
+                </div>
+                <div class="lockout-panel" id="lockout-panel"><span style="font-size:2.5rem;">🔒</span>
+                    <p style="color:var(--ared);font-weight:700;margin:.7rem 0 .3rem;">Account Locked</p>
+                    <p style="color:var(--amuted);font-size:.82rem;margin-bottom:.9rem;">Too many failed attempts. Try
+                        again in:</p>
+                    <div class="lockout-timer" id="lockout-timer">30s</div>
+                </div>
+                <button class="btn-back-site" onclick="nav('home')">← Back to Website</button>
+            </div>
+        </div>
+
+        <!-- DASHBOARD -->
+        <div id="dash-view" style="display:none;">
+            <aside class="sidebar">
+                <div class="sb-logo">
+                    <div class="sb-logo-txt">Mauli<span>Tredars</span></div>
+                    <div class="sb-tag">Admin Dashboard</div>
+                </div>
+                <div class="sb-user">
+                    <div class="sb-av">👤</div>
+                    <div>
+                        <div class="sb-uname" id="sb-uname">Administrator</div>
+                        <div class="sb-role">Super Admin</div>
+                    </div>
+                </div>
+                <div class="sb-section">Main</div>
+                <ul class="sb-nav">
+                    <li><a onclick="showPanel('overview')" id="np-overview" class="on"><span class="si">📊</span>
+                            Overview</a></li>
+                    <li><a onclick="showPanel('enquiries')" id="np-enquiries"><span class="si">📬</span> Enquiries <span
+                                class="sb-badge" id="nb-new">0</span></a></li>
+                </ul>
+                <div class="sb-section">System</div>
+                <ul class="sb-nav">
+                    <li><a onclick="showPanel('security')" id="np-security"><span class="si">🛡️</span> Security Log</a>
+                    </li>
+                    <li><a onclick="showPanel('settings')" id="np-settings"><span class="si">⚙️</span> Settings</a></li>
+                </ul>
+                <div class="sb-footer">
+                    <button class="btn-to-site" onclick="exitAdmin()">🌐 Back to Website</button>
+                    <button class="btn-logout" onclick="doLogout()">🚪 Sign Out</button>
+                </div>
+            </aside>
+            <div class="main-col">
+                <div class="topbar">
+                    <div class="topbar-ttl" id="panel-ttl">Overview</div>
+                    <div class="topbar-r">
+                        <div class="online-dot">System Online</div>
+                        <div class="tb-clock" id="aclock">--:--:--</div>
+                    </div>
+                </div>
+                <!-- OVERVIEW -->
+                <div class="panel on" id="p-overview">
+                    <div class="met-grid" id="met-grid"></div>
+                    <div class="chart-row">
+                        <div class="chart-card">
+                            <div class="chart-hd">
+                                <div>
+                                    <div class="chart-ttl">Enquiries This Week</div>
+                                    <div class="chart-sub">Daily count</div>
+                                </div>
+                            </div>
+                            <div class="bar-chart" id="week-bars"></div>
+                        </div>
+                        <div class="chart-card">
+                            <div class="chart-hd">
+                                <div>
+                                    <div class="chart-ttl">By Service</div>
+                                    <div class="chart-sub">Breakdown</div>
+                                </div>
+                            </div>
+                            <div class="donut-wrap"><svg class="dsvg" viewBox="0 0 120 120" id="donut-svg">
+                                    <circle cx="60" cy="60" r="50" fill="none" stroke="rgba(255,255,255,.05)"
+                                        stroke-width="18" />
+                                </svg>
+                                <div class="dlgs" id="donut-legs"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div>
+                        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.9rem;">
+                            <div
+                                style="font-family:'Playfair Display',serif;font-size:1rem;font-weight:700;color:var(--cream);">
+                                Recent Enquiries</div><span style="font-size:.76rem;color:var(--lime);cursor:pointer;"
+                                onclick="showPanel('enquiries')">View All →</span>
+                        </div>
+                        <div class="tbl-card" id="recent-tbl"></div>
+                    </div>
+                </div>
+                <!-- ENQUIRIES -->
+                <div class="panel" id="p-enquiries">
+                    <div class="tbl-card">
+                        <div class="tbl-toolbar">
+                            <div style="display:flex;align-items:center;gap:.7rem;flex-wrap:wrap;">
+                                <div class="search-box"><span>🔍</span><input type="text" id="srch"
+                                        placeholder="Search name, email, service…" oninput="renderTbl()" /></div>
+                                <select class="fsel" id="fst" onchange="renderTbl()">
+                                    <option value="">All Status</option>
+                                    <option value="new">New</option>
+                                    <option value="read">Read</option>
+                                    <option value="replied">Replied</option>
+                                </select>
+                                <select class="fsel" id="fsvc" onchange="renderTbl()">
+                                    <option value="">All Services</option>
+                                    <option>Fruits Export</option>
+                                    <option>Vegetables Export</option>
+                                    <option>Spices Export</option>
+                                    <option>Product Distribution</option>
+                                    <option>Market Analysis</option>
+                                    <option>International Business Consulting</option>
+                                    <option>Product Catalog Request</option>
+                                </select>
+                            </div>
+                            <div style="display:flex;gap:.55rem;flex-wrap:wrap;">
+                                <button class="tbtn lime" onclick="exportCSV()">⬇ CSV</button>
+                                <button class="tbtn gold" onclick="markAllRead()">✓ All Read</button>
+                                <button class="tbtn red" onclick="clearAllConf()">🗑 Clear All</button>
+                            </div>
+                        </div>
+                        <div class="tbl-wrap" id="main-tbl"></div>
+                        <div class="pag" id="pag"></div>
+                    </div>
+                </div>
+                <!-- SECURITY -->
+                <div class="panel" id="p-security">
+                    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.4rem;">
+                        <div>
+                            <h2 style="font-family:'Playfair Display',serif;font-size:1.35rem;color:var(--cream);">
+                                Security Log</h2>
+                            <p style="color:var(--amuted);font-size:.82rem;margin-top:.18rem;">Authentication events &
+                                system activity</p>
+                        </div><button class="tbtn red" onclick="clearLog()">Clear Log</button>
+                    </div>
+                    <div class="log-list" id="sec-log"></div>
+                </div>
+                <!-- SETTINGS -->
+                <div class="panel" id="p-settings">
+                    <div style="margin-bottom:1.4rem;">
+                        <h2 style="font-family:'Playfair Display',serif;font-size:1.35rem;color:var(--cream);">Settings
+                        </h2>
+                        <p style="color:var(--amuted);font-size:.82rem;margin-top:.18rem;">Manage credentials and
+                            preferences</p>
+                    </div>
+                    <div class="set-grid">
+                        <div class="set-card">
+                            <h3>🔐 Change Password</h3>
+                            <label
+                                style="font-size:.68rem;color:var(--amuted);font-weight:700;letter-spacing:.09em;text-transform:uppercase;display:block;margin-bottom:.38rem;">Current
+                                Password</label><input type="password" class="set-inp" id="pc"
+                                placeholder="Current password" />
+                            <label
+                                style="font-size:.68rem;color:var(--amuted);font-weight:700;letter-spacing:.09em;text-transform:uppercase;display:block;margin-top:.6rem;margin-bottom:.38rem;">New
+                                Password</label><input type="password" class="set-inp" id="pn"
+                                placeholder="Min 8 chars + number + symbol" />
+                            <label
+                                style="font-size:.68rem;color:var(--amuted);font-weight:700;letter-spacing:.09em;text-transform:uppercase;display:block;margin-top:.6rem;margin-bottom:.38rem;">Confirm
+                                New Password</label><input type="password" class="set-inp" id="pnc"
+                                placeholder="Repeat new password" />
+                            <button class="btn-save" style="width:100%;margin-top:.9rem;" onclick="chgPw()">Update
+                                Password</button>
+                        </div>
+                        <div class="set-card">
+                            <h3>⚙️ Admin Profile</h3>
+                            <label
+                                style="font-size:.68rem;color:var(--amuted);font-weight:700;letter-spacing:.09em;text-transform:uppercase;display:block;margin-bottom:.38rem;">Display
+                                Name</label><input type="text" class="set-inp" id="adn" placeholder="Administrator" />
+                            <label
+                                style="font-size:.68rem;color:var(--amuted);font-weight:700;letter-spacing:.09em;text-transform:uppercase;display:block;margin-top:.6rem;margin-bottom:.38rem;">Admin
+                                Email</label><input type="email" class="set-inp" id="ade"
+                                placeholder="admin@maulitredars.com" />
+                            <button class="btn-save" style="width:100%;margin-top:.9rem;" onclick="savePro()">Save
+                                Profile</button>
+                        </div>
+                        <div class="set-card">
+                            <h3>🛡️ Security Settings</h3>
+                            <div class="set-row">
+                                <div>
+                                    <div class="set-lbl">Login Lockout</div>
+                                    <div class="set-desc">Lock after 5 failed attempts</div>
+                                </div><button class="toggle on" onclick="this.classList.toggle('on')"></button>
+                            </div>
+                            <div class="set-row">
+                                <div>
+                                    <div class="set-lbl">Session Timeout</div>
+                                    <div class="set-desc">Auto-logout after 30 min idle</div>
+                                </div><button class="toggle on" onclick="this.classList.toggle('on')"></button>
+                            </div>
+                            <div class="set-row">
+                                <div>
+                                    <div class="set-lbl">Log All Actions</div>
+                                    <div class="set-desc">Keep security event log</div>
+                                </div><button class="toggle on" onclick="this.classList.toggle('on')"></button>
+                            </div>
+                            <div class="set-row">
+                                <div>
+                                    <div class="set-lbl">Email Alerts</div>
+                                    <div class="set-desc">Notify on new enquiry</div>
+                                </div><button class="toggle" onclick="this.classList.toggle('on')"></button>
+                            </div>
+                        </div>
+                        <div class="set-card">
+                            <h3>📊 Data Management</h3>
+                            <div style="display:flex;flex-direction:column;gap:.7rem;">
+                                <button class="tbtn lime" style="padding:.65rem 1rem;font-size:.8rem;"
+                                    onclick="exportCSV()">⬇ Export Enquiries (CSV)</button>
+                                <button class="tbtn gold" style="padding:.65rem 1rem;font-size:.8rem;"
+                                    onclick="exportJSON()">⬇ Export as JSON</button>
+                                <button class="tbtn red" style="padding:.65rem 1rem;font-size:.8rem;"
+                                    onclick="clearAllConf()">🗑 Clear All Enquiries</button>
+                            </div>
+                            <div
+                                style="margin-top:1.1rem;padding:.85rem;background:rgba(255,255,255,.03);border-radius:9px;font-size:.73rem;color:var(--amuted);line-height:1.7;">
+                                <strong style="color:var(--atext);">Storage:</strong> Shared localStorage — website form
+                                submissions instantly appear here. For production, connect to a Node.js / Firebase
+                                backend.</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Detail Modal -->
+        <div class="modal-bg" id="modal-bg">
+            <div class="modal">
+                <div class="modal-hd">
+                    <div class="modal-t">Enquiry Details</div><button class="modal-x" onclick="closeModal()">✕</button>
+                </div>
+                <div class="modal-bd" id="modal-bd"></div>
+                <div class="modal-ft" id="modal-ft"></div>
+            </div>
+        </div>
+    </div><!-- end v-admin -->
+
+    <!-- ══════════════════════════════════════════════
+     JAVASCRIPT
+══════════════════════════════════════════════ -->
+    <script>
+        /* ═══════ SHARED DATABASE API ═══════ */
+        const DB = {
+            K: { sub: 'mt_sub', auth: 'mt_auth', log: 'mt_log' },
+            get(k) { try { return JSON.parse(localStorage.getItem(k) || 'null') } catch { return null } },
+            set(k, v) { localStorage.setItem(k, JSON.stringify(v)) },
+            all() { return DB.get(DB.K.sub) || [] },
+            save(d) { DB.set(DB.K.sub, d) },
+            add(e) { const d = DB.all(); d.unshift(e); DB.save(d) },
+            upd(id, p) { const d = DB.all(); const i = d.findIndex(x => x.id === id); if (i > -1) { Object.assign(d[i], p); DB.save(d); } },
+            del(id) { DB.save(DB.all().filter(x => x.id !== id)) },
+            clear() { DB.save([]) },
+            auth() { return DB.get(DB.K.auth) || { u: 'admin', p: 'Mauli@2025', name: 'Administrator', email: 'admin@maulitredars.com' } },
+            setAuth(d) { DB.set(DB.K.auth, d) },
+            log() { return DB.get(DB.K.log) || [] },
+            addLog(type, msg) { const l = DB.log(); l.unshift({ type, msg, time: new Date().toLocaleString('en-IN') }); if (l.length > 120) l.pop(); DB.set(DB.K.log, l) },
+            clearLog() { DB.set(DB.K.log, []) }
+        };
+
+        /* Seed demo data */
+        if (!DB.all().length) {
+            const demo = [
+                { id: 1700001, date: '19/03/2026, 10:22', name: 'Rahul Mehta', company: 'FreshMart Dubai', email: 'rahul@freshmart.ae', phone: '+971 50 234 5678', country: 'UAE', service: 'Fruits Export', message: 'Interested in bulk export of Alphonso mangoes for the upcoming season. Share pricing and MOQ.', status: 'new' },
+                { id: 1700002, date: '18/03/2026, 15:10', name: 'Sophie Laurent', company: 'BioFresh Europe', email: 'sophie@biofresh.de', phone: '+49 89 1234 5678', country: 'Germany', service: 'Vegetables Export', message: 'Looking to source Nashik onions for our organic retail chain. Please send product catalog.', status: 'read' },
+                { id: 1700003, date: '17/03/2026, 09:45', name: 'Ahmed Al-Rashid', company: 'Gulf Traders LLC', email: 'ahmed@gulftraders.sa', phone: '+966 55 678 9012', country: 'Saudi Arabia', service: 'Spices Export', message: 'Need regular supply of turmeric and cumin seeds. 5 tons monthly. Please quote CIF Dammam port.', status: 'replied' },
+                { id: 1700004, date: '16/03/2026, 14:30', name: 'Priya Nair', company: '—', email: 'priya.nair@gmail.com', phone: '+91 98765 43210', country: 'India', service: 'Market Analysis', message: 'Starting an export business, need market analysis for vegetables to Southeast Asia.', status: 'new' },
+                { id: 1700005, date: '15/03/2026, 11:00', name: 'James Wilson', company: 'UK Fresh Ltd', email: 'james@ukfresh.co.uk', phone: '+44 207 1234 5678', country: 'United Kingdom', service: 'International Business Consulting', message: 'Want to set up a direct import channel from Maharashtra farms. Need consulting for FSSAI and UK import regulations.', status: 'new' },
+                { id: 1700006, date: '14/03/2026, 08:20', name: 'Tan Wei Liang', company: 'SG Agro Pte Ltd', email: 'tanwei@sgagro.sg', phone: '+65 9123 4567', country: 'Singapore', service: 'Product Catalog Request', message: 'Please send full product catalog with seasonal availability for our procurement team.', status: 'read' },
+            ];
+            DB.save(demo);
+            DB.addLog('i', 'System initialized with demo data');
+        }
+
+        /* ═══════ CURSOR ═══════ */
+        const CUR = document.getElementById('cursor'), RING = document.getElementById('cursor-ring');
+        let mx = 0, my = 0, rx = 0, ry = 0;
+        document.addEventListener('mousemove', e => { mx = e.clientX; my = e.clientY; CUR.style.left = mx + 'px'; CUR.style.top = my + 'px'; });
+        (function anim() { rx += (mx - rx) * .13; ry += (my - ry) * .13; RING.style.left = rx + 'px'; RING.style.top = ry + 'px'; requestAnimationFrame(anim); })();
+        function addHover(sel) { document.querySelectorAll(sel).forEach(el => { el.addEventListener('mouseenter', () => document.body.classList.add('hov')); el.addEventListener('mouseleave', () => document.body.classList.remove('hov')); }); }
+        addHover('a,button,.qs-card,.prod-card,.svc-card,.val-card,.ci-card,.flt-btn,.tbtn,.act-btn,.pb,.toggle,.sb-nav a,.btn-to-site,.btn-logout,.btn-login,.btn-submit,.btn-p,.btn-o,.btn-reset,.admin-footer-link');
+        document.addEventListener('mousedown', () => document.body.classList.add('clk'));
+        document.addEventListener('mouseup', () => document.body.classList.remove('clk'));
+
+        /* ═══════ LOADER ═══════ */
+        window.addEventListener('load', () => setTimeout(() => { document.getElementById('loader').classList.add('gone'); showView('home', true); }, 1900));
+
+        /* ═══════ SCROLL ═══════ */
+        window.addEventListener('scroll', () => {
+            const h = document.documentElement.scrollHeight - window.innerHeight;
+            document.getElementById('sprog').style.width = (window.scrollY / h * 100) + '%';
+            document.getElementById('site-nav').classList.toggle('scrolled', window.scrollY > 55);
+            document.getElementById('btt').classList.toggle('show', window.scrollY > 380);
+            initReveal();
+        });
+
+        /* ═══════ NAVIGATION ═══════ */
+        const TITLES = { home: 'Home', about: 'About', services: 'Services', products: 'Products', contact: 'Contact', admin: 'Admin' };
+        let curView = '';
+        function nav(page, e) { if (e) e.preventDefault(); if (page === curView) return; const wipe = document.getElementById('wipe'); document.getElementById('wipe-txt').textContent = TITLES[page] || page; wipe.classList.add('in'); setTimeout(() => { showView(page); wipe.classList.remove('in'); wipe.classList.add('out'); setTimeout(() => wipe.classList.remove('out'), 500); }, 420); }
+        function showView(page, instant) {
+            document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+            document.getElementById('v-' + page).classList.add('active');
+            window.scrollTo({ top: 0, behavior: 'instant' });
+            curView = page;
+            // nav active state
+            document.querySelectorAll('[data-p]').forEach(a => a.classList.toggle('active', a.dataset.p === page));
+            // admin mode body flag
+            document.body.classList.toggle('admin-mode', page === 'admin');
+            // show/hide site nav
+            document.getElementById('site-nav').style.display = page === 'admin' ? 'none' : '';
+            document.getElementById('btt').style.display = page === 'admin' ? 'none' : '';
+            // admin check
+            if (page === 'admin') initAdminView();
+            // refresh live stats
+            if (page === 'home') refreshHomeStats();
+            if (page === 'contact') refreshContactStats();
+            setTimeout(initReveal, 80);
+            if (!instant && page === 'home') setTimeout(startCounters, 500);
+        }
+
+        /* ═══════ REVEAL ═══════ */
+        function initReveal() {
+            document.querySelectorAll('.view.active .reveal,.view.active .reveal-l,.view.active .reveal-r').forEach((el, i) => {
+                if (el.classList.contains('on')) return;
+                const io = new IntersectionObserver(ents => { ents.forEach(en => { if (en.isIntersecting) { setTimeout(() => en.target.classList.add('on'), i * 55); io.unobserve(en.target); } }); }, { threshold: .1 });
+                io.observe(el);
+            });
+        }
+
+        /* ═══════ COUNTER ═══════ */
+        function startCounters() {
+            document.querySelectorAll('[data-count]').forEach(el => {
+                const t = +el.dataset.count, s = el.dataset.suf || '';
+                let c = 0; const step = t / 55;
+                const ti = setInterval(() => { c += step; if (c >= t) { c = t; clearInterval(ti); } el.textContent = Math.floor(c) + s; }, 20);
+            });
+        }
+
+        /* ═══════ LIVE STATS FOR WEBSITE ═══════ */
+        function refreshHomeStats() {
+            const d = DB.all();
+            const el = id => document.getElementById(id);
+            if (el('hm-total')) el('hm-total').querySelector('.n').textContent = d.length;
+            if (el('hm-new')) el('hm-new').querySelector('.n').textContent = d.filter(x => x.status === 'new').length;
+            if (el('hm-countries')) el('hm-countries').querySelector('.n').textContent = [...new Set(d.map(x => x.country))].length;
+        }
+        function refreshContactStats() {
+            const d = DB.all();
+            const el = document.getElementById('contact-live-stats');
+            if (el) el.innerHTML = `${d.length} total enquiries · ${d.filter(x => x.status === 'new').length} new · ${[...new Set(d.map(x => x.country))].length} countries`;
+        }
+
+        /* ═══════ PRODUCT FILTER ═══════ */
+        function filterProd(cat, btn) {
+            document.querySelectorAll('.flt-btn').forEach(b => b.classList.remove('active')); btn.classList.add('active');
+            document.querySelectorAll('#prod-grid .prod-card').forEach(c => {
+                const show = cat === 'all' || c.dataset.cat === cat;
+                c.style.display = show ? '' : 'none';
+                if (show) { c.classList.remove('on'); setTimeout(() => c.classList.add('on'), 50); }
+            });
+        }
+
+        /* ═══════ ORBIT ═══════ */
+        (function orbit() {
+            const items = [{ e: '🥭', a: 0 }, { e: '🧅', a: 60 }, { e: '🍇', a: 120 }, { e: '🍊', a: 180 }, { e: '🌶️', a: 240 }, { e: '🥦', a: 300 }];
+            const wrap = document.querySelector('.orbit-wrap');
+            if (!wrap) return;
+            items.forEach(it => { const el = document.createElement('div'); el.className = 'orbit-item'; el.textContent = it.e; wrap.appendChild(el); });
+            const els = wrap.querySelectorAll('.orbit-item');
+            let angle = 0;
+            (function spin() { angle += .28; items.forEach((it, i) => { const a = (it.a + angle) * Math.PI / 180; const r = 140; els[i].style.cssText = `position:absolute;top:50%;left:50%;width:44px;height:44px;background:rgba(255,255,255,.06);border:1px solid rgba(126,200,80,.18);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1.3rem;margin-left:${r * Math.cos(a) - 22}px;margin-top:${r * Math.sin(a) - 22}px;transform:rotate(${-angle}deg);cursor:none;`; }); requestAnimationFrame(spin); })();
+        })();
+
+        /* ═══════ PARTICLES ═══════ */
+        (function particles() {
+            const c = document.getElementById('particles-c'); if (!c) return;
+            const cols = ['#7ec850', '#c8952a', '#2d6e45'];
+            for (let i = 0; i < 16; i++) { const p = document.createElement('div'); const sz = Math.random() * 5 + 2; p.style.cssText = `position:absolute;width:${sz}px;height:${sz}px;background:${cols[i % 3]};border-radius:50%;left:${Math.random() * 100}%;opacity:0;animation:ldbar ${Math.random() * 10 + 7}s linear ${Math.random() * 8}s infinite;`; c.appendChild(p); }
+        })();
+
+        /* ═══════ CONTACT FORM ═══════ */
+        const fv = (id, errId, chk) => { const el = document.getElementById(id), er = document.getElementById(errId), ok = chk(el.value.trim()); el.classList.toggle('err', !ok); er.classList.toggle('show', !ok); return ok; };
+        document.getElementById('fm')?.addEventListener('input', () => { document.getElementById('cc').textContent = document.getElementById('fm').value.length; });
+        function submitForm() {
+            const v1 = fv('fn', 'fe-n', v => v.length > 1);
+            const v2 = fv('fe', 'fe-e', v => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v));
+            const v3 = fv('fco', 'fe-co', v => v !== '');
+            const v4 = fv('fsv', 'fe-sv', v => v !== '');
+            const v5 = fv('fm', 'fe-m', v => v.length > 9);
+            if (!v1 || !v2 || !v3 || !v4 || !v5) return;
+            const btn = document.getElementById('fsbtn');
+            btn.disabled = true; btn.textContent = 'Submitting…';
+            setTimeout(() => {
+                const entry = {
+                    id: Date.now(), date: new Date().toLocaleString('en-IN'),
+                    name: document.getElementById('fn').value.trim(),
+                    company: document.getElementById('fc').value.trim() || '—',
+                    email: document.getElementById('fe').value.trim(),
+                    phone: document.getElementById('fp').value.trim() || '—',
+                    country: document.getElementById('fco').value,
+                    service: document.getElementById('fsv').value,
+                    message: document.getElementById('fm').value.trim(),
+                    status: 'new'
+                };
+                DB.add(entry);
+                DB.addLog('s', `New enquiry from ${entry.name} (${entry.country}) — ${entry.service}`);
+                document.getElementById('contact-form-wrap').style.display = 'none';
+                document.getElementById('fs-success').classList.add('show');
+                refreshContactStats();
+                toast('✅ Enquiry submitted! Check Admin Dashboard.');
+                btn.disabled = false; btn.textContent = 'Send Enquiry →';
+                // Update admin badge if dashboard is open
+                updateBadges();
+            }, 1000);
+        }
+        function resetForm() {
+            ['fn', 'fc', 'fe', 'fp', 'fm'].forEach(id => document.getElementById(id).value = '');
+            ['fco', 'fsv'].forEach(id => document.getElementById(id).selectedIndex = 0);
+            document.getElementById('cc').textContent = '0';
+            document.getElementById('contact-form-wrap').style.display = '';
+            document.getElementById('fs-success').classList.remove('show');
+        }
+
+        /* ═══════════════════════════
+           ADMIN SECTION
+        ═══════════════════════════ */
+        let failCount = 0, lockEnd = 0, sesTimer = null, tblPage = 1, PER = 8;
+
+        function initAdminView() {
+            const sess = JSON.parse(sessionStorage.getItem('mt_sess') || 'null');
+            if (sess && sess.exp > Date.now()) {
+                const a = DB.auth();
+                showDash(a.name || sess.u);
+            } else {
+                document.getElementById('login-view').style.display = 'flex';
+                document.getElementById('dash-view').style.display = 'none';
+            }
+        }
+        function showDash(name) {
+            document.getElementById('login-view').style.display = 'none';
+            document.getElementById('dash-view').style.display = 'flex';
+            document.getElementById('sb-uname').textContent = name;
+            document.getElementById('adn').value = name;
+            document.getElementById('ade').value = DB.auth().email || '';
+            setInterval(() => { const el = document.getElementById('aclock'); if (el) el.textContent = new Date().toLocaleTimeString('en-IN'); }, 1000);
+            renderMet(); renderWeek(); renderDonut(); renderRecent(); renderTbl(); updateBadges();
+            resetSession();
+        }
+        function exitAdmin() { nav('home'); }
+
+        /* Auth */
+        function doLogin() {
+            if (Date.now() < lockEnd) { showLockout(); return; }
+            const u = document.getElementById('lu').value.trim();
+            const p = document.getElementById('lp').value;
+            const a = DB.auth();
+            const btn = document.getElementById('lbtn');
+            btn.disabled = true; btn.textContent = 'Authenticating…';
+            setTimeout(() => {
+                if (u === a.u && p === a.p) {
+                    failCount = 0;
+                    DB.addLog('s', `Login: ${u} at ${new Date().toLocaleTimeString()}`);
+                    sessionStorage.setItem('mt_sess', JSON.stringify({ u, exp: Date.now() + 1800000 }));
+                    document.getElementById('lerr').classList.remove('show');
+                    showDash(a.name || u);
+                } else {
+                    failCount++; const rem = 5 - failCount;
+                    DB.addLog('d', `Failed login attempt ${failCount} for: "${u}"`);
+                    const er = document.getElementById('lerr');
+                    document.getElementById('lerr-msg').textContent = `Invalid credentials. ${rem > 0 ? rem + ' attempts remaining.' : 'Account locked.'}`;
+                    er.classList.add('show');
+                    ['lu', 'lp'].forEach(id => { const el = document.getElementById(id); el.classList.add('shake'); setTimeout(() => el.classList.remove('shake'), 420); });
+                    if (failCount >= 5) { lockEnd = Date.now() + 30000; DB.addLog('d', 'Account locked — too many failed attempts'); showLockout(); }
+                    else document.getElementById('att-warn').textContent = `⚠️ ${rem} attempt${rem !== 1 ? 's' : ''} remaining`;
+                    btn.disabled = false; btn.textContent = 'Sign In to Dashboard';
+                }
+            }, 700);
+        }
+        function showLockout() {
+            document.getElementById('login-form-fields').classList.add('locked');
+            document.getElementById('lockout-panel').classList.add('show');
+            const t = setInterval(() => {
+                const r = Math.ceil((lockEnd - Date.now()) / 1000);
+                document.getElementById('lockout-timer').textContent = r + 's';
+                if (r <= 0) { clearInterval(t); failCount = 0; document.getElementById('login-form-fields').classList.remove('locked'); document.getElementById('lockout-panel').classList.remove('show'); document.getElementById('lp').value = ''; document.getElementById('att-warn').textContent = ''; document.getElementById('lerr').classList.remove('show'); document.getElementById('lbtn').disabled = false; document.getElementById('lbtn').textContent = 'Sign In to Dashboard'; }
+            }, 1000);
+        }
+        function doLogout() { DB.addLog('i', `Admin logged out at ${new Date().toLocaleTimeString()}`); sessionStorage.removeItem('mt_sess'); clearTimeout(sesTimer); document.getElementById('dash-view').style.display = 'none'; document.getElementById('login-view').style.display = 'flex'; document.getElementById('lp').value = ''; }
+        function togglePw() { const f = document.getElementById('lp'); f.type = f.type === 'password' ? 'text' : 'password'; }
+        function resetSession() { clearTimeout(sesTimer); sesTimer = setTimeout(() => { toast('Session expired — logging out', 'warn'); setTimeout(doLogout, 2000); }, 1800000); }
+        document.addEventListener('click', () => { if (curView === 'admin') resetSession(); });
+
+        /* Metrics */
+        function renderMet() {
+            const d = DB.all(); const nw = d.filter(x => x.status === 'new').length;
+            const ctr = [...new Set(d.map(x => x.country))].length;
+            const wk = d.filter(x => { try { const pt = x.date.split(', ')[0].split('/'); const dt = new Date(pt[2], pt[1] - 1, pt[0]); return Date.now() - dt < 7 * 86400000; } catch { return false; } }).length;
+            document.getElementById('met-grid').innerHTML = `
+    <div class="met-card"><span class="met-ico">📬</span><span class="met-n">${d.length}</span><span class="met-l">Total Enquiries</span><span class="met-d up">↑ All time</span></div>
+    <div class="met-card g"><span class="met-ico">🆕</span><span class="met-n">${nw}</span><span class="met-l">New / Unread</span><span class="met-d nw">Needs attention</span></div>
+    <div class="met-card b"><span class="met-ico">🌍</span><span class="met-n">${ctr}</span><span class="met-l">Countries</span><span class="met-d up">↑ Global reach</span></div>
+    <div class="met-card"><span class="met-ico">📅</span><span class="met-n">${wk}</span><span class="met-l">This Week</span><span class="met-d up">↑ Recent</span></div>`;
+        }
+        function renderWeek() {
+            const d = DB.all(); const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']; const c = [0, 0, 0, 0, 0, 0, 0];
+            d.forEach(x => { try { const pt = x.date.split(', ')[0].split('/'); const dt = new Date(pt[2], pt[1] - 1, pt[0]); const diff = Math.floor((Date.now() - dt) / 86400000); if (diff < 7) { const day = (new Date().getDay() + 6 - diff) % 7; c[day]++; } } catch { } });
+            const max = Math.max(...c, 1);
+            document.getElementById('week-bars').innerHTML = days.map((d, i) => `<div class="bw"><div class="bar" style="height:${(c[i] / max) * 100}px" data-v="${c[i]}"></div><div class="bl">${d}</div></div>`).join('');
+        }
+        function renderDonut() {
+            const d = DB.all(); const svc = {}; d.forEach(x => { svc[x.service] = (svc[x.service] || 0) + 1; });
+            const cols = ['#7ec850', '#c8952a', '#5599e0', '#e09955', '#e05599', '#55e0b4'];
+            const total = d.length || 1; const ents = Object.entries(svc).sort((a, b) => b[1] - a[1]).slice(0, 5);
+            const svg = document.getElementById('donut-svg'); svg.querySelectorAll('.seg').forEach(e => e.remove());
+            const legs = document.getElementById('donut-legs'); legs.innerHTML = '';
+            const circ = 2 * Math.PI * 50; let off = 0;
+            ents.forEach(([name, cnt], i) => {
+                const pct = cnt / total; const len = pct * circ;
+                const seg = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+                seg.setAttribute('class', 'seg'); seg.setAttribute('cx', '60'); seg.setAttribute('cy', '60'); seg.setAttribute('r', '50');
+                seg.setAttribute('fill', 'none'); seg.setAttribute('stroke', cols[i % cols.length]); seg.setAttribute('stroke-width', '18');
+                seg.setAttribute('stroke-dasharray', `${len} ${circ - len}`);
+                seg.setAttribute('stroke-dashoffset', -(off * circ - circ / 4));
+                svg.appendChild(seg); off += pct;
+                legs.innerHTML += `<div class="dlg"><div class="dlg-dot" style="background:${cols[i % cols.length]}"></div><span style="flex:1;font-size:.72rem;">${name.length > 20 ? name.slice(0, 20) + '…' : name}</span><span style="font-family:var(--mono);font-size:.7rem;color:var(--amuted);">${cnt}</span></div>`;
+            });
+            if (!ents.length) legs.innerHTML = '<span style="color:var(--amuted);font-size:.78rem;">No data yet</span>';
+        }
+        function renderRecent() {
+            const d = DB.all().slice(0, 5); const el = document.getElementById('recent-tbl');
+            if (!d.length) { el.innerHTML = `<div class="empty-s"><span>📭</span><p>No enquiries yet.</p></div>`; return; }
+            el.innerHTML = `<div class="tbl-wrap"><table><thead><tr><th>Name</th><th>Country</th><th>Service</th><th>Date</th><th>Status</th><th></th></tr></thead><tbody>${d.map(x => `<tr><td class="td-n">${esc(x.name)}</td><td>${esc(x.country)}</td><td style="max-width:150px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:.77rem;">${esc(x.service)}</td><td class="td-dt">${esc(x.date)}</td><td><span class="bdg bdg-${x.status}">${x.status}</span></td><td><button class="act-btn av" onclick="viewEntry(${x.id})">👁</button></td></tr>`).join('')}</tbody></table></div>`;
+        }
+
+        /* Main table */
+        function renderTbl() {
+            let d = DB.all();
+            const q = (document.getElementById('srch') || {}).value?.toLowerCase() || '';
+            const st = (document.getElementById('fst') || {}).value || '';
+            const sv = (document.getElementById('fsvc') || {}).value || '';
+            if (q) d = d.filter(x => (x.name + x.email + x.service + x.company + x.country + x.message).toLowerCase().includes(q));
+            if (st) d = d.filter(x => x.status === st);
+            if (sv) d = d.filter(x => x.service === sv);
+            const total = d.length, pages = Math.ceil(total / PER) || 1;
+            tblPage = Math.min(tblPage, pages);
+            const sl = d.slice((tblPage - 1) * PER, tblPage * PER);
+            const el = document.getElementById('main-tbl');
+            if (!sl.length) { el.innerHTML = `<div class="empty-s"><span>🔍</span><p>No matching enquiries.</p></div>`; }
+            else el.innerHTML = `<table><thead><tr><th>#</th><th>Name</th><th>Company</th><th>Email</th><th>Country</th><th>Service</th><th>Message</th><th>Date</th><th>Status</th><th>Actions</th></tr></thead><tbody>${sl.map((x, i) => `<tr><td style="color:var(--amuted);font-family:var(--mono);font-size:.7rem;">${(tblPage - 1) * PER + i + 1}</td><td class="td-n">${esc(x.name)}</td><td style="font-size:.78rem;color:var(--amuted);">${esc(x.company)}</td><td class="td-e"><a href="mailto:${esc(x.email)}">${esc(x.email)}</a></td><td>${esc(x.country)}</td><td style="font-size:.76rem;max-width:130px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${esc(x.service)}</td><td class="td-m">${esc(x.message)}</td><td class="td-dt">${esc(x.date)}</td><td><span class="bdg bdg-${x.status}">${x.status}</span></td><td><div class="td-acts"><button class="act-btn av" title="View" onclick="viewEntry(${x.id})">👁</button><button class="act-btn ar" title="Mark Replied" onclick="markSt(${x.id},'replied')">↩</button><button class="act-btn ad" title="Delete" onclick="delEntry(${x.id})">🗑</button></div></td></tr>`).join('')}</tbody></table>`;
+            const pag = document.getElementById('pag');
+            const pgBtns = Array.from({ length: pages }, (_, i) => `<button class="pb ${i + 1 === tblPage ? 'on' : ''}" onclick="goPage(${i + 1})">${i + 1}</button>`).join('');
+            pag.innerHTML = `<span>Showing ${(tblPage - 1) * PER + 1}–${Math.min(tblPage * PER, total)} of ${total}</span><div class="pag-btns">${pgBtns}</div>`;
+        }
+        function goPage(p) { tblPage = p; renderTbl(); }
+
+        /* Entry actions */
+        function viewEntry(id) {
+            const x = DB.all().find(e => e.id === id); if (!x) return;
+            if (x.status === 'new') { DB.upd(id, { status: 'read' }); updateBadges(); renderTbl(); renderMet(); }
+            document.getElementById('modal-bd').innerHTML = `
+    <div class="dr"><div class="dl">Name</div><div class="dv">${esc(x.name)}</div></div>
+    <div class="dr"><div class="dl">Company</div><div class="dv">${esc(x.company)}</div></div>
+    <div class="dr"><div class="dl">Email</div><div class="dv"><a href="mailto:${esc(x.email)}">${esc(x.email)}</a></div></div>
+    <div class="dr"><div class="dl">Phone</div><div class="dv">${esc(x.phone)}</div></div>
+    <div class="dr"><div class="dl">Country</div><div class="dv">${esc(x.country)}</div></div>
+    <div class="dr"><div class="dl">Service</div><div class="dv">${esc(x.service)}</div></div>
+    <div class="dr"><div class="dl">Date</div><div class="dv">${esc(x.date)}</div></div>
+    <div class="dr"><div class="dl">Status</div><div class="dv"><span class="bdg bdg-${x.status}">${x.status}</span></div></div>
+    <div class="dr" style="flex-direction:column;gap:.55rem;"><div class="dl">Message</div><div class="msg-box">${esc(x.message)}</div></div>`;
+            document.getElementById('modal-ft').innerHTML = `
+    <button class="tbtn lime" onclick="markSt(${id},'replied');closeModal()">✓ Mark Replied</button>
+    <a href="mailto:${esc(x.email)}?subject=Re: ${esc(x.service)} - Mauli Tredars&body=Dear ${esc(x.name)},%0A%0A" class="tbtn lime" style="text-decoration:none;display:inline-flex;align-items:center;">✉ Reply via Email</a>
+    <button class="tbtn red" onclick="delEntry(${id});closeModal()">🗑 Delete</button>`;
+            document.getElementById('modal-bg').classList.add('show');
+            DB.addLog('i', `Viewed enquiry: ${x.name} (${x.email})`);
+        }
+        function closeModal() { document.getElementById('modal-bg').classList.remove('show'); }
+        document.getElementById('modal-bg')?.addEventListener('click', e => { if (e.target.id === 'modal-bg') closeModal(); });
+        function markSt(id, st) { DB.upd(id, { status: st }); DB.addLog('i', `Marked ${id} as ${st}`); updateBadges(); renderTbl(); renderRecent(); renderMet(); toast(`Marked as ${st}`); }
+        function delEntry(id) { if (!confirm('Delete this enquiry?')) return; DB.del(id); DB.addLog('w', `Deleted enquiry ID: ${id}`); updateBadges(); renderTbl(); renderRecent(); renderMet(); renderDonut(); toast('Deleted', 'warn'); }
+        function markAllRead() { const d = DB.all().map(x => ({ ...x, status: x.status === 'new' ? 'read' : x.status })); DB.save(d); updateBadges(); renderTbl(); renderMet(); toast('All marked as read'); }
+        function clearAllConf() { if (!confirm('Delete ALL enquiries? Cannot be undone!')) return; DB.clear(); DB.addLog('d', 'All enquiries cleared'); updateBadges(); renderTbl(); renderRecent(); renderMet(); renderDonut(); renderWeek(); toast('All cleared', 'warn'); }
+        function updateBadges() { const n = DB.all().filter(x => x.status === 'new').length; const b = document.getElementById('nb-new'); if (b) { b.textContent = n; b.style.display = n ? '' : 'none'; } refreshHomeStats(); refreshContactStats(); }
+
+        /* Panel navigation */
+        const PTITLES = { overview: 'Overview', enquiries: 'Enquiries', security: 'Security Log', settings: 'Settings' };
+        function showPanel(name) {
+            document.querySelectorAll('.panel').forEach(p => p.classList.remove('on'));
+            document.querySelectorAll('.sb-nav a').forEach(a => a.classList.remove('on'));
+            document.getElementById('p-' + name).classList.add('on');
+            document.getElementById('np-' + name).classList.add('on');
+            document.getElementById('panel-ttl').textContent = PTITLES[name];
+            if (name === 'security') renderSecLog();
+            if (name === 'overview') { renderMet(); renderRecent(); renderWeek(); renderDonut(); }
+            if (name === 'enquiries') renderTbl();
+            updateBadges();
+        }
+
+        /* Security log */
+        function renderSecLog() {
+            const log = DB.log(); const el = document.getElementById('sec-log');
+            if (!el) return;
+            if (!log.length) { el.innerHTML = '<div class="empty-s"><span>🔍</span><p>No security events logged yet.</p></div>'; return; }
+            const ico = { s: '✅', d: '🚨', w: '⚠️', i: 'ℹ️' };
+            const cls = { s: 's', d: 'd', w: 'w', i: 'i' };
+            el.innerHTML = log.map(l => `<div class="log-e ${cls[l.type] || 'i'}"><span class="log-ico">${ico[l.type] || '📝'}</span><span class="log-m">${esc(l.msg)}</span><span class="log-t">${esc(l.time)}</span></div>`).join('');
+        }
+        function clearLog() { if (!confirm('Clear security log?')) return; DB.clearLog(); renderSecLog(); toast('Log cleared', 'warn'); }
+
+        /* Settings */
+        function chgPw() {
+            const cur = document.getElementById('pc').value, nw = document.getElementById('pn').value, cn = document.getElementById('pnc').value;
+            const a = DB.auth();
+            if (cur !== a.p) { toast('Current password incorrect', 'err'); return; }
+            if (nw.length < 8) { toast('Min 8 characters', 'err'); return; }
+            if (!/[0-9]/.test(nw) || !/[^a-zA-Z0-9]/.test(nw)) { toast('Include at least 1 number and 1 symbol', 'err'); return; }
+            if (nw !== cn) { toast('Passwords do not match', 'err'); return; }
+            DB.setAuth({ ...a, p: nw }); DB.addLog('w', 'Admin password changed');
+            ['pc', 'pn', 'pnc'].forEach(id => document.getElementById(id).value = '');
+            toast('Password updated!');
+        }
+        function savePro() {
+            const name = document.getElementById('adn').value.trim();
+            const email = document.getElementById('ade').value.trim();
+            DB.setAuth({ ...DB.auth(), name, email });
+            document.getElementById('sb-uname').textContent = name || DB.auth().u;
+            DB.addLog('i', `Profile updated: ${name}`);
+            toast('Profile saved!');
+        }
+
+        /* Export */
+        function exportCSV() {
+            const d = DB.all(); if (!d.length) { toast('No data', 'warn'); return; }
+            const h = ['ID', 'Date', 'Name', 'Company', 'Email', 'Phone', 'Country', 'Service', 'Message', 'Status'];
+            const rows = d.map(x => [x.id, x.date, x.name, x.company, x.email, x.phone, x.country, x.service, `"${(x.message || '').replace(/"/g, "'")}"`, x.status].join(','));
+            dlBlob([h.join(','), ...rows].join('\n'), 'text/csv', 'mauli_enquiries.csv');
+            toast('CSV exported!');
+        }
+        function exportJSON() { dlBlob(JSON.stringify(DB.all(), null, 2), 'application/json', 'mauli_enquiries.json'); toast('JSON exported!'); }
+        function dlBlob(c, t, n) { const b = new Blob([c], { type: t }); const u = URL.createObjectURL(b); Object.assign(document.createElement('a'), { href: u, download: n }).click(); URL.revokeObjectURL(u); }
+
+        /* Util */
+        function esc(s) { return String(s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'); }
+        function toast(msg, type = '') { const t = document.getElementById('toast'); t.textContent = msg; t.className = ''; t.classList.add('show'); if (type) t.classList.add(type); clearTimeout(t._t); t._t = setTimeout(() => t.classList.remove('show'), 3500); }
+    </script>
+</body>
+
+</html>
